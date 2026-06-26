@@ -38,7 +38,7 @@ with tab1:
         actividad_inicial = st.number_input("Actividad Calibrada Inicial (mCi):", min_value=0.1, value=10.0, step=0.5, key="act_init")
         tiempo_transcurrido = st.slider("Tiempo de retraso del paciente (minutos):", min_value=0, max_value=int(t12 * 3), value=int(t12 / 2), key="time_slider")
 
-    # Cálculos físicos usando las fórmulas del PDF de Alejandro Condori
+    # Cálculos físicos
     lambda_rad = np.log(2) / t12
     actividad_final = actividad_inicial * np.exp(-lambda_rad * tiempo_transcurrido)
     porcentaje_remanente = (actividad_final / actividad_inicial) * 100
@@ -84,7 +84,7 @@ with tab2:
     lambda_Tc = np.log(2) / t12_Tc
 
     # Inicializar estado para guardar las eluciones en la sesión de Streamlit
-    if 'hora_elucion' Novelty in st.session_state:
+    if 'hora_elucion' not in st.session_state:
         st.session_state.hora_elucion = []
 
     col_izq2, col_der2 = st.columns([1, 2])
@@ -117,22 +117,18 @@ with tab2:
         factor_rendimiento = 0.86  # Fracción de decaimiento de Mo a Tc-99m
 
         for i, h in enumerate(horas):
-            # Buscar la última elución ocurrida antes de la hora 'h'
             eluciones_previas = [e for e in st.session_state.hora_elucion if e <= h]
             
             if not eluciones_previas:
-                # Crecimiento estándar desde el inicio (t=0)
                 t_desde_elucion = h
                 Tc_inicial = 0
                 Mo_inicial = actividad_Mo0
             else:
-                # Crecimiento desde la última elución
                 ultima_e = max(eluciones_previas)
                 t_desde_elucion = h - ultima_e
-                Tc_inicial = 0  # Suponemos eficiencia de elución del 100%
+                Tc_inicial = 0
                 Mo_inicial = actividad_Mo0 * np.exp(-lambda_Mo * ultima_e)
 
-            # Ecuación de equilibrio transitorio
             termino_Mo = (factor_rendimiento * lambda_Tc * Mo_inicial) / (lambda_Tc - lambda_Mo)
             crecimiento = termino_Mo * (np.exp(-lambda_Mo * t_desde_elucion) - np.exp(-lambda_Tc * t_desde_elucion))
             decaimiento_Tc_libre = Tc_inicial * np.exp(-lambda_Tc * t_desde_elucion)
@@ -143,7 +139,6 @@ with tab2:
         ax2.plot(horas, act_Mo, color="#1f77b4", label="Actividad 99Mo (Madre)", linewidth=2)
         ax2.plot(horas, act_Tc, color="#ff7f0e", label="Actividad 99mTc (Hija)", linewidth=2, linestyle="--")
         
-        # Dibujar líneas verticales en cada ordeño
         for e in st.session_state.hora_elucion:
             ax2.axvline(e, color="green", linestyle=":", alpha=0.8, label="Elución (Ordeño)" if e == st.session_state.hora_elucion[0] else "")
 
@@ -153,4 +148,3 @@ with tab2:
         ax2.grid(True, alpha=0.3)
         ax2.legend()
         st.pyplot(fig2)
-        st.caption("Física aplicada: Observá cómo el Tecnecio (Hija) tarda unas 22-24 horas en alcanzar su máxima actividad acumulada nuevamente tras cada ordeño.")
