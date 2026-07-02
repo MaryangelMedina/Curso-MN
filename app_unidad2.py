@@ -15,6 +15,8 @@ if 'historial_eluciones' not in st.session_state:
     st.session_state.historial_eluciones = []
 if 'ultimo_vial' not in st.session_state:
     st.session_state.ultimo_vial = None
+if 'error_elucion' not in st.session_state:
+    st.session_state.error_elucion = None
 
 # --- PARÁMETROS EN LA BARRA LATERAL ---
 st.sidebar.header("⚙️ Configuración del Generador")
@@ -30,39 +32,6 @@ t_half_tc = 6.005
 lam_mo = np.log(2) / t_half_mo
 lam_tc = np.log(2) / t_half_tc
 F = 0.86  
-
-# --- BOTÓN ANIMADO CON SPINNER Y CELEBRACIÓN ---
-if st.sidebar.button("🧼 REALIZAR ORDEÑE"):
-    if hora_lavado not in st.session_state.historial_eluciones:
-        with st.spinner("⏳ Pasando solución salina... eluyendo la columna de alúmina..."):
-            time.sleep(2.0) # Pausa dramática para simular el goteo real
-        
-        st.balloons() # ¡Vuelven los globos animados!
-        st.session_state.historial_eluciones.append(hora_lavado)
-        st.session_state.historial_eluciones.sort()
-        
-        # Calcular los GBq extraídos exactamente en ESTA elución
-        eluciones_antes = [e for e in st.session_state.historial_eluciones if e < hora_lavado]
-        if not eluciones_antes:
-            t_acum = hora_lavado
-            mo_ini = A_mo0
-        else:
-            t_acum = hora_lavado - max(eluciones_antes)
-            mo_ini = A_mo0 * np.exp(-lam_mo * max(eluciones_antes))
-        
-        gbq_extraidos = (F * lam_tc * mo_ini / (lam_tc - lam_mo)) * (np.exp(-lam_mo * t_acum) - np.exp(-lam_tc * t_acum))
-        
-        # Guardar datos para el cartel dinámico del vial (Clave fija en español)
-        st.session_state.ultimo_vial = {
-            "actividad": gbq_extraidos,
-            "hora": hora_lavado
-        }
-        st.sidebar.success(f"¡Elución completada con éxito a las {hora_lavado} hs!")
-
-if st.sidebar.button("🔄 Reiniciar Generador"):
-    st.session_state.historial_eluciones = []
-    st.session_state.ultimo_vial = None
-    st.rerun()
 
 # --- CÁLCULO VECTORIAL PARA 1 SEMANA (168 HORAS) ---
 horas = np.linspace(0, 168, 1500)
@@ -97,6 +66,50 @@ else:
 act_mo_columna = A_mo0 * np.exp(-lam_mo * hora_lavado)
 act_tc_columna = (F * lam_tc * mo_ini_slider / (lam_tc - lam_mo)) * (np.exp(-lam_mo * t_slider) - np.exp(-lam_tc * t_slider))
 
+
+# --- BOTÓN CON LOGICA DE CONTROL DE ERRORES ---
+if st.sidebar.button("🧼 REALIZAR ORDEÑE"):
+    # Reseteamos errores previos
+    st.session_state.error_elucion = None
+    
+    if hora_lavado in st.session_state.historial_eluciones:
+        st.session_state.error_elucion = f"⚠️ **ERROR DE OPERACIÓN:** El generador ya fue eluido en la hora {hora_lavado}. No se puede duplicar la elución en el mismo instante térmico."
+    elif act_tc_columna < 0.1:  # Umbral técnico de corte por actividad insuficiente
+        st.session_state.error_elucion = "⚠️ **RESTRICCIÓN RADIOLÓGICA:** Rendimiento de elución insuficiente. La actividad acumulada de $^{99\\mathrm{m}}\\mathrm{Tc}$ disponible en la columna de alúmina no cumple con el umbral mínimo para extracción clínica. Permita un mayor tiempo de crecimiento radiológico."
+    else:
+        with st.spinner("⏳ Pasando solución salina... eluyendo la columna de alúmina..."):
+            time.sleep(2.0)
+        
+        st.balloons()
+        st.session_state.historial_eluciones.append(hora_lavado)
+        st.session_state.historial_eluciones.sort()
+        
+        # Calcular los GBq extraídos exactamente en ESTA elución
+        eluciones_antes = [e for e in st.session_state.historial_eluciones if e < hora_lavado]
+        if not eluciones_antes:
+            t_acum = hora_lavado
+            mo_ini = A_mo0
+        else:
+            t_acum = hora_lavado - max(eluciones_antes)
+            mo_ini = A_mo0 * np.exp(-lam_mo * max(eluciones_antes))
+        
+        gbq_extraidos = (F * lam_tc * mo_ini / (lam_tc - lam_mo)) * (np.exp(-lam_mo * t_acum) - np.exp(-lam_tc * t_acum))
+        
+        st.session_state.ultimo_vial = {
+            "actividad": gbq_extraidos,
+            "hora": hora_lavado
+        }
+        st.sidebar.success(f"¡Elución completada con éxito!")
+        # Forzar recarga para actualizar el gráfico y las barras inmediatamente
+        st.rerun()
+
+if st.sidebar.button("🔄 Reiniciar Generador"):
+    st.session_state.historial_eluciones = []
+    st.session_state.ultimo_vial = None
+    st.session_state.error_elucion = None
+    st.rerun()
+
+
 # --- INTERFAZ GRÁFICA Y ANIMACIONES ---
 col_visual, col_grafico = st.columns([1, 1.2])
 
@@ -109,13 +122,21 @@ with col_visual:
     porcentaje_mo = min(100, int((act_mo_columna / A_mo0) * 100))
     st.progress(porcentaje_mo / 100, text=f"{act_mo_columna:.2f} GBq retenidos")
     
-    # Barra dinámica del Hijo (Tecnecio)
+    st.write("---")
+    # SECCIÓN DESTACADA EN GRANDE PARA EL HIJO
     st.write("🔵 **Actividad de Tc-99m (Hijo acumulado para extraer):**")
     porcentaje_tc = min(100, int((act_tc_columna / max(0.1, act_mo_columna)) * 100))
-    st.progress(porcentaje_tc / 100, text=f"{act_tc_columna:.2f} GBq libres en la columna")
+    st.progress(porcentaje_tc / 100)
     
-    # CARTEL ANIMADO DEL VIAL BLINDADO OBTENIDO
+    # Métrica en tamaño grande
+    st.metric(label="Masa Radiactiva Disponible en Columna", value=f"{act_tc_columna:.2f} GBq")
+    
+    # DESPLIEGUE DEL CARTEL DE RESTRICCIÓN TÉCNICA
+    if st.session_state.error_elucion is not None:
+        st.error(st.session_state.error_elucion)
+    
     st.write("---")
+    # CARTEL ANIMADO DEL VIAL BLINDADO OBTENIDO
     if st.session_state.ultimo_vial is not None:
         st.markdown("### 📦 Último Vial de Recogida Obtenido:")
         texto_vial = f"""
@@ -137,11 +158,9 @@ with col_grafico:
     ax.plot(horas, act_mo, label="$^{99}$Mo (Padre en columna)", color="red", lw=2.5)
     ax.plot(horas, act_tc, label="$^{99\\mathrm{m}}$Tc (Hijo)", color="blue", lw=2)
     
-    # Dibujar líneas verticales por cada elución real del historial
     for e in st.session_state.historial_eluciones:
         ax.axvline(e, color="green", linestyle=":", lw=2, label="Elución realizada" if e == st.session_state.historial_eluciones[0] else "")
     
-    # Marcar con una línea punteada dónde está parado el slider del alumno actualmente
     ax.axvline(hora_lavado, color="orange", linestyle="--", lw=1.5, label=f"Línea de tiempo actual ({hora_lavado}h)")
     
     ax.set_xlabel("Tiempo acumulado de la semana (horas)")
