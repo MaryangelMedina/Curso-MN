@@ -1,72 +1,150 @@
 import streamlit as st
 import numpy as np
-import pandas as pd
 import matplotlib.pyplot as plt
 
-st.set_page_config(page_title="Laboratorio Virtual: Decaimiento", layout="wide")
+# Configuración de la página
+st.set_page_config(page_title="Lab Virtual: Radioactividad Clínica", layout="wide")
 
-st.title("🧪 Laboratorio Virtual: Leyes de Decaimiento")
-st.markdown(f"**Unidad 3:** Dr. Roberto Isoardi")
+st.title("🧪 Laboratorio Virtual: Radiactividad y Logística de Radiofármacos")
+st.write("Herramienta interactiva para la gestión de dosis y simulación de generadores en Medicina Nuclear.")
 
-# --- SIDEBAR: Parámetros de Entrada ---
-st.sidebar.header("⚙️ Configuración de la Fuente")
-isótopo = st.sidebar.selectbox("Seleccionar Isótopo", ["F-18", "Tc-99m", "I-131", "C-11", "Personalizado"])
+# Creamos las dos pestañas basadas en tus ideas favoritas
+tab1, tab2 = st.tabs(["📋 Idea 1: Turnero Clínico (Decaimiento)", "🐐 Idea 2: Ordeño del Generador (99Mo/99mTc)"])
 
-if isótopo == "F-18": t_half = 109.7 / 60  # horas
-elif isótopo == "Tc-99m": t_half = 6.01
-elif isótopo == "I-131": t_half = 192.48 # 8.02 días * 24
-elif isótopo == "C-11": t_half = 20.3 / 60
-else: t_half = st.sidebar.number_input("T 1/2 (horas)", value=1.0)
-
-a0 = st.sidebar.number_input("Actividad Inicial (A0) en MBq", value=100.0)
-tiempo_max = st.sidebar.slider("Tiempo de observación (horas)", 1, 48, 12)
-
-# --- CÁLCULOS MATEMÁTICOS ---
-lam = np.log(2) / t_half
-tau = 1 / lam
-
-# Generar datos para la curva
-t = np.linspace(0, tiempo_max, 100)
-at = a0 * np.exp(-lam * t)
-
-# --- LAYOUT PRINCIPAL ---
-col1, col2 = st.columns(2)
-
-with col1:
-    st.subheader("📊 Resultados de la Fuente")
-    st.write(f"**Constante de decaimiento (λ):** `{lam:.4f} h⁻¹`")
-    st.write(f"**Vida Media (τ):** `{tau:.2f} horas`")
-    st.write(f"**Actividad a las {tiempo_max}h:** `{a0 * np.exp(-lam * tiempo_max):.2f} MBq`")
-    
-    st.info("💡 **Método Gráfico:** Observa cómo en el gráfico semilogarítmico (pestaña 2), la curva se vuelve una línea recta.")
-
-with col2:
-    st.subheader("🔄 Conversor de Unidades")
-    val_bq = st.number_input("Convertir MBq a Ci", value=100.0)
-    st.write(f"{val_bq} MBq = **{val_bq * 0.027:.4f} mCi**")
-    st.write(f"*(Equivalencia: 1 Ci = 37 GBq)*")
-
-# --- GRÁFICOS ---
-tab1, tab2 = st.tabs(["Curva de Decaimiento", "Gráfico Semilogarítmico"])
-
+# ==========================================
+# PESTAÑA 1: EL TURNERO CLÍNICO
+# ==========================================
 with tab1:
-    fig, ax = plt.subplots()
-    ax.plot(t, at, color='red', lw=2)
-    ax.set_xlabel("Tiempo (horas)")
-    ax.set_ylabel("Actividad (MBq)")
-    ax.grid(True, alpha=0.3)
-    st.pyplot(fig)
+    st.header("📋 Gestión de Dosis y Decaimiento en la Sala de Espera")
+    st.write("Simulá el impacto del retraso de un paciente en la actividad real del radiofármaco antes de la inyección.")
 
+    # Datos de radionucleidos médicos reales (T1/2 en minutos)
+    isoto_datos = {
+        "Flúor-18 (18F) - [PET]": {"t12": 109.7, "uso": "Marcación de FDG para PET/CT metabólico."},
+        "Tecnecio-99m (99mTc) - [SPECT]": {"t12": 360.0, "uso": "Centellogramas óseos, cardíacos y SPECT general."},
+        "Carbono-11 (11C) - [PET]": {"t12": 20.3, "uso": "Estudios neurológicos específicos y oncología rápida."},
+        "Yodo-131 (131I) - [Terapia]": {"t12": 11520.0, "uso": "Tratamiento de cáncer de tiroides e hipertiroidismo."}
+    }
+
+    col_izq, col_der = st.columns([1, 2])
+
+    with col_izq:
+        st.subheader("⚙️ Configuración de la Dosis")
+        seleccion = st.selectbox("Seleccione el Radionucleido:", list(isoto_datos.keys()))
+        
+        t12 = isoto_datos[seleccion]["t12"]
+        st.info(f"**T_1/2:** {t12} min. | **Uso:** {isoto_datos[seleccion]['uso']}")
+
+        actividad_inicial = st.number_input("Actividad Calibrada Inicial (mCi):", min_value=0.1, value=10.0, step=0.5, key="act_init")
+        tiempo_transcurrido = st.slider("Tiempo de retraso del paciente (minutos):", min_value=0, max_value=int(t12 * 3), value=int(t12 / 2), key="time_slider")
+
+    # Cálculos físicos
+    lambda_rad = np.log(2) / t12
+    actividad_final = actividad_inicial * np.exp(-lambda_rad * tiempo_transcurrido)
+    porcentaje_remanente = (actividad_final / actividad_inicial) * 100
+
+    with col_der:
+        # Métricas hospitalarias
+        m1, m2, m3 = st.columns(3)
+        m1.metric("Actividad Inicial", f"{actividad_inicial:.2f} mCi")
+        m2.metric("Retraso", f"{tiempo_transcurrido} min")
+        m3.metric("Actividad al Inyectar", f"{actividad_final:.2f} mCi", delta=f"-{(actividad_inicial - actividad_final):.2f} mCi", delta_color="inverse")
+
+        # Gráfico de decaimiento
+        t_eje = np.linspace(0, int(t12 * 3), 500)
+        a_eje = actividad_inicial * np.exp(-lambda_rad * t_eje)
+
+        fig1, ax1 = plt.subplots(figsize=(8, 3.5))
+        ax1.plot(t_eje, a_eje, color="#ff4b4b", linewidth=2, label="Curva de Decaimiento")
+        ax1.scatter(tiempo_transcurrido, actividad_final, color="#1f77b4", s=120, zorder=5, label="Inyección")
+        ax1.axhline(actividad_final, color="gray", linestyle="--", alpha=0.5)
+        ax1.axvline(tiempo_transcurrido, color="gray", linestyle="--", alpha=0.5)
+        ax1.set_xlabel("Tiempo (minutos)")
+        ax1.set_ylabel("Actividad (mCi)")
+        ax1.grid(True, alpha=0.3)
+        ax1.legend()
+        st.pyplot(fig1)
+
+        if porcentaje_remanente < 25:
+            st.error(f"⚠️ **ALERTA CLÍNICA:** La dosis cayó al {porcentaje_remanente:.1f}%. La estadística de conteo en el tomógrafo será baja. Ajuste tiempos de adquisición.")
+        else:
+            st.success(f"✅ **Dosis Óptima:** Conserva el {porcentaje_remanente:.1f}% de la actividad original.")
+
+# ==========================================
+# PESTAÑA 2: EL ORDEÑO DEL GENERADOR
+# ==========================================
 with tab2:
-    fig2, ax2 = plt.subplots()
-    ax2.semilogy(t, at, color='blue', lw=2)
-    ax2.set_xlabel("Tiempo (horas)")
-    ax2.set_ylabel("Log Actividad (MBq)")
-    ax2.grid(True, which="both", alpha=0.3)
-    st.pyplot(fig2)
+    st.header("🐐 Simulación del Generador de Molibdeno-99 / Tecnecio-99m")
+    st.write("El Tecnecio-99m se produce por el decaimiento del Molibdeno-99. Simulá el proceso de elución ('ordeño') y analizá el equilibrio transitorio.")
 
-# --- EFICIENCIA DE MEDICIÓN ---
-st.divider()
-st.subheader("⏱️ Cálculo de Eficiencia ($\epsilon$)")
-counts = st.number_input("Cuentas medidas (CPM)", value=5000)
-st.write(f"Si la actividad real es de {a0} MBq, la eficiencia es mínima. Este módulo ayuda a calcular la relación entre cuentas detectadas y desintegraciones reales.")
+    # Parámetros físicos reales (en horas)
+    t12_Mo = 66.0   # Molibdeno-99
+    t12_Tc = 6.0    # Tecnecio-99m
+    lambda_Mo = np.log(2) / t12_Mo
+    lambda_Tc = np.log(2) / t12_Tc
+
+    # Inicializar estado para guardar las eluciones en la sesión de Streamlit
+    if 'hora_elucion' not in st.session_state:
+        st.session_state.hora_elucion = []
+
+    col_izq2, col_der2 = st.columns([1, 2])
+
+    with col_izq2:
+        st.subheader("⏳ Control de Radiofarmacia")
+        actividad_Mo0 = st.number_input("Actividad inicial de 99Mo en la columna (mCi):", min_value=100, value=1000, step=100)
+        
+        st.write("---")
+        st.write("🤖 **Acción de Radiofarmacia:**")
+        hora_actual_elucion = st.slider("Hora del día para realizar la elución:", min_value=0, max_value=72, value=24)
+        
+        if st.button("🧼 Realizar Elución (Ordeñar 99mTc)"):
+            if hora_actual_elucion not in st.session_state.hora_elucion:
+                st.session_state.hora_elucion.append(hora_actual_elucion)
+                st.session_state.hora_elucion.sort()
+                st.success(f"¡Generador eluido a las {hora_actual_elucion} hs!")
+
+        if st.button("🔄 Reiniciar Generador"):
+            st.session_state.hora_elucion = []
+            st.rerun()
+
+    with col_der2:
+        # Cálculo de las curvas considerando las eluciones
+        horas = np.linspace(0, 72, 1000)
+        act_Mo = actividad_Mo0 * np.exp(-lambda_Mo * horas)
+        
+        # Ecuación de Bateman modificada por las eluciones puntuales
+        act_Tc = np.zeros_like(horas)
+        factor_rendimiento = 0.86  # Fracción de decaimiento de Mo a Tc-99m
+
+        for i, h in enumerate(horas):
+            eluciones_previas = [e for e in st.session_state.hora_elucion if e <= h]
+            
+            if not eluciones_previas:
+                t_desde_elucion = h
+                Tc_inicial = 0
+                Mo_inicial = actividad_Mo0
+            else:
+                ultima_e = max(eluciones_previas)
+                t_desde_elucion = h - ultima_e
+                Tc_inicial = 0
+                Mo_inicial = actividad_Mo0 * np.exp(-lambda_Mo * ultima_e)
+
+            termino_Mo = (factor_rendimiento * lambda_Tc * Mo_inicial) / (lambda_Tc - lambda_Mo)
+            crecimiento = termino_Mo * (np.exp(-lambda_Mo * t_desde_elucion) - np.exp(-lambda_Tc * t_desde_elucion))
+            decaimiento_Tc_libre = Tc_inicial * np.exp(-lambda_Tc * t_desde_elucion)
+            act_Tc[i] = crecimiento + decaimiento_Tc_libre
+
+        # Graficar las curvas de equilibrio transitorio
+        fig2, ax2 = plt.subplots(figsize=(8, 3.5))
+        ax2.plot(horas, act_Mo, color="#1f77b4", label="Actividad 99Mo (Madre)", linewidth=2)
+        ax2.plot(horas, act_Tc, color="#ff7f0e", label="Actividad 99mTc (Hija)", linewidth=2, linestyle="--")
+        
+        for e in st.session_state.hora_elucion:
+            ax2.axvline(e, color="green", linestyle=":", alpha=0.8, label="Elución (Ordeño)" if e == st.session_state.hora_elucion[0] else "")
+
+        ax2.set_xlabel("Tiempo acumulado (Horas)")
+        ax2.set_ylabel("Actividad (mCi)")
+        ax2.set_title("Dinámica del Generador y Equilibrio Transitorio")
+        ax2.grid(True, alpha=0.3)
+        ax2.legend()
+        st.pyplot(fig2)
