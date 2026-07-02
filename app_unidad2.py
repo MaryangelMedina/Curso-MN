@@ -6,7 +6,7 @@ import time
 # Configuración de la página
 st.set_page_config(page_title="Simulador Animado Multi-Ordeñe", layout="wide")
 
-st.title("🧪 Laboratorio Virtual: Ordeñe Animado Semanal ($^{99}\mathrm{Mo}/^{99\mathrm{m}}\mathrm{Tc}$)")
+st.title("🧪 Laboratorio Virtual: Ordeñe Animado Semanal ($^{99}\\mathrm{Mo}/^{99\\mathrm{m}}\\mathrm{Tc}$)")
 st.markdown("**Unidad Nº 2:** Producción de Radioisótopos y Radiofarmacia")
 st.write("Simulá de forma visual y animada la rutina de una sala de radiofarmacia realizando múltiples ordeñes a lo largo de la semana.")
 
@@ -52,7 +52,7 @@ if st.sidebar.button("🧼 REALIZAR ORDEÑE"):
         
         gbq_extraidos = (F * lam_tc * mo_ini / (lam_tc - lam_mo)) * (np.exp(-lam_mo * t_acum) - np.exp(-lam_tc * t_acum))
         
-        # Guardar datos para el cartel dinámico del vial
+        # Guardar datos para el cartel dinámico del vial (Clave fija en español)
         st.session_state.ultimo_vial = {
             "actividad": gbq_extraidos,
             "hora": hora_lavado
@@ -86,7 +86,6 @@ for i, h in enumerate(horas):
     act_tc[i] = crecimiento + tc_inicio_tramo * np.exp(-lam_tc * t_tramo)
 
 # --- DETERMINAR ESTADO ACTUAL PARA LAS BARRAS VISUALES ---
-# Ver la actividad en la columna justo en la hora que marca el slider
 eluciones_antes_slider = [e for e in st.session_state.historial_eluciones if e <= hora_lavado]
 if not eluciones_antes_slider:
     t_slider = hora_lavado
@@ -124,7 +123,7 @@ with col_visual:
         
         🔥 **Actividad Extraída:** **{st.session_state.ultimo_vial['actividad']:.2f} GBq**
         
-        ⏱️ **Momento del lavado:** {st.session_state.ultimo_vial['hour']} hs del ciclo.
+        ⏱️ **Momento del lavado:** {st.session_state.ultimo_vial['hora']} hs del ciclo.
         """
         st.info(texto_vial)
         st.metric(label="✨ Eficiencia de extracción del lavado", value="100% (Teórica)")
@@ -136,7 +135,7 @@ with col_grafico:
     
     fig, ax = plt.subplots(figsize=(7, 5))
     ax.plot(horas, act_mo, label="$^{99}$Mo (Padre en columna)", color="red", lw=2.5)
-    ax.plot(horas, act_tc, label="$^{99\mathrm{m}}$Tc (Hijo)", color="blue", lw=2)
+    ax.plot(horas, act_tc, label="$^{99\\mathrm{m}}$Tc (Hijo)", color="blue", lw=2)
     
     # Dibujar líneas verticales por cada elución real del historial
     for e in st.session_state.historial_eluciones:
