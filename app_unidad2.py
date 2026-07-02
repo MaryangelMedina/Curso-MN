@@ -6,7 +6,7 @@ import time
 # Configuración de la página
 st.set_page_config(page_title="Simulador Animado de Generador", layout="wide")
 
-st.title("🧪 Laboratorio Virtual: Ordeñe Animado del Generador $^{99}\\text{Mo}/^{99\\text{m}}\\text{Tc}$")
+st.title("🧪 Laboratorio Virtual: Ordeñe Animado del Generador $^{99}\mathrm{Mo}/^{99\mathrm{m}}\mathrm{Tc}$")
 st.markdown("**Unidad Nº 2:** Producción de Radioisótopos y Radiofarmacia")
 st.write("Simulación visual del proceso de elución en la columna de alúmina y el principio del equilibrio transitorio.")
 
@@ -23,7 +23,6 @@ lam_tc = np.log(2) / t_half_tc
 F = 0.86  # Fracción de decaimiento útil
 
 # --- CÁLCULO DE ACTIVIDADES ---
-# Actividad justo antes de eluir (Ecuación de Bateman)
 act_mo_antes = A_mo0 * np.exp(-lam_mo * tiempo_acumulado)
 act_tc_antes = (F * lam_tc * A_mo0 / (lam_tc - lam_mo)) * (np.exp(-lam_mo * tiempo_acumulado) - np.exp(-lam_tc * tiempo_acumulado))
 
@@ -40,7 +39,6 @@ with col_visual:
     st.progress(porcentaje_mo / 100, text=f"{act_mo_antes:.2f} GBq restantes")
     
     st.write("🔵 **Actividad de Tc-99m (Hijo acumulado listo para extraer):**")
-    # El máximo teórico alcanzable es cercano al Mo, usamos eso como escala de la barra
     porcentaje_tc = min(100, int((act_tc_antes / act_mo_antes) * 100))
     st.progress(porcentaje_tc / 100, text=f"{act_tc_antes:.2f} GBq disponibles")
     
@@ -49,19 +47,24 @@ with col_visual:
     st.write("Presioná el botón para pasar la solución salina por la columna y extraer el Tc-99m hacia el vial vacío.")
     
     # BOTÓN ANIMADO CON SPINNER Y CELEBRACIÓN
-    if st.button("🧼 REALIZAR ELUCCIÓN (ORDEÑAR GENERADOR)"):
+    if st.button("🧼 REALIZAR ELUCIÓN (ORDEÑAR GENERADOR)"):
         with st.spinner("⏳ Pasando solución salina por la columna de alúmina... arrastrando el Pertecnetato..."):
-            time.sleep(2.5) # Pausa dramática para simular el goteo real
+            time.sleep(2.5) # Pausa para simular el goteo real
         
-        st.balloons() # Animación gráfica de festejo en pantalla
-        st.success(f"¡Elución completada con éxito!")
+        st.balloons() # Animación gráfica de festejo
+        st.success("¡Elución completada con éxito!")
         
-        # El Vial Blindado de salida
+        # El Vial Blindado de salida sin strings rotos
         st.markdown("### 📦 Vial de Recogida Obtenido:")
-        st.info(f"🧪 **Contenido del Vial:** Pertecnetato de Sodio ($^{99\\text{m}}\\text{Tc}O_4^-$)\n\n"
-                f"🔥 **Actividad Extraída:** **{act_tc_antes:.2f} GBq**\n\n"
-                f"⏱️ **Hora del proceso:** {tiempo_acumulado} hs desde la carga.")
         
+        texto_vial = f"""
+        🧪 **Contenido del Vial:** Pertecnetato de Sodio ($^{{99m}}\\mathrm{{TcO}}_4^-$)
+        
+        🔥 **Actividad Extraída:** **{act_tc_antes:.2f} GBq**
+        
+        ⏱️ **Hora del proceso:** {tiempo_acumulado} hs desde la carga.
+        """
+        st.info(texto_vial)
         st.metric(label="✨ Eficiencia de extracción teórica", value="95% - 100%")
 
 with col_grafico:
@@ -75,7 +78,7 @@ with col_grafico:
     
     fig, ax = plt.subplots(figsize=(7, 5))
     ax.plot(t, A_mo_graf, label="$^{99}$Mo (Padre retenido)", color="red", lw=2.5)
-    ax.plot(t, A_tc_graf, label="$^{99\\text{m}}$Tc (Hijo libre)", color="blue", lw=2.5, linestyle="--")
+    ax.plot(t, A_tc_graf, label="$^{99\mathrm{m}}$Tc (Hijo libre)", color="blue", lw=2.5, linestyle="--")
     
     # Línea que marca dónde decidió eluir el alumno
     ax.axvline(x=tiempo_acumulado, color="green", linestyle=":", lw=2, label=f"Tu elución ({tiempo_acumulado} hs)")
