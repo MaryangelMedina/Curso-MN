@@ -1,64 +1,90 @@
 import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
+import time
 
-st.set_page_config(page_title="Simulador de Generador Mo-99/Tc-99m", layout="wide")
+# Configuración de la página
+st.set_page_config(page_title="Simulador Animado de Generador", layout="wide")
 
-st.title("🧪 Laboratorio Virtual: Dinámica del Generador $^{99}\\text{Mo}/^{99\\text{m}}\\text{Tc}$")
-st.markdown("**Unidad 2:** Producción de Radioisótopos y Radiofarmacia")
+st.title("🧪 Laboratorio Virtual: Ordeñe Animado del Generador $^{99}\\text{Mo}/^{99\\text{m}}\\text{Tc}$")
+st.markdown("**Unidad Nº 2:** Producción de Radioisótopos y Radiofarmacia")
+st.write("Simulación visual del proceso de elución en la columna de alúmina y el principio del equilibrio transitorio.")
 
-# --- PARÁMETROS ---
+# --- PARÁMETROS EN LA BARRA LATERAL ---
 st.sidebar.header("⚙️ Configuración del Generador")
-A_mo0 = st.sidebar.number_input("Actividad inicial de Mo-99 (GBq)", value=100.0)
-tiempo_elucion = st.sidebar.slider("Momento de la elución / lavado (horas)", 12, 72, 24)
+A_mo0 = st.sidebar.number_input("Actividad inicial de Mo-99 cargada (GBq):", min_value=10.0, value=100.0, step=10.0)
+tiempo_acumulado = st.sidebar.slider("Tiempo de crecimiento antes del ordeñe (horas):", 4, 72, 24)
 
-# Constantes físicas
+# Constantes físicas reales
 t_half_mo = 66.0   # Mo-99 en horas
 t_half_tc = 6.005  # Tc-99m en horas
-
 lam_mo = np.log(2) / t_half_mo
 lam_tc = np.log(2) / t_half_tc
-F = 0.86  # Fracción de decaimiento de Mo-99 que va a Tc-99m
+F = 0.86  # Fracción de decaimiento útil
 
-# --- CÁLCULO DE CURVAS ---
-# Fase 1: Crecimiento hasta la elución
-t1 = np.linspace(0, tiempo_elucion, 200)
-A_mo1 = A_mo0 * np.exp(-lam_mo * t1)
-# Ecuación de Bateman para el hijo
-A_tc1 = (F * lam_tc * A_mo0 / (lam_tc - lam_mo)) * (np.exp(-lam_mo * t1) - np.exp(-lam_tc * t1))
+# --- CÁLCULO DE ACTIVIDADES ---
+# Actividad justo antes de eluir (Ecuación de Bateman)
+act_mo_antes = A_mo0 * np.exp(-lam_mo * tiempo_acumulado)
+act_tc_antes = (F * lam_tc * A_mo0 / (lam_tc - lam_mo)) * (np.exp(-lam_mo * tiempo_acumulado) - np.exp(-lam_tc * tiempo_acumulado))
 
-# Fase 2: Después de la elución (elución al 100% de eficiencia para simplificar)
-t2 = np.linspace(tiempo_elucion, 96, 200)
-A_mo2 = A_mo0 * np.exp(-lam_mo * t2)
+# --- INTERFAZ VISUAL: EL GENERADOR EN EL LABORATORIO ---
+col_visual, col_grafico = st.columns([1, 1.2])
 
-# El Mo-99 sigue igual, pero el Tc-99m cae a cero en t=tiempo_elucion y vuelve a crecer
-A_mo_en_elucion = A_mo0 * np.exp(-lam_mo * tiempo_elucion)
-A_tc2 = (F * lam_tc * A_mo_en_elucion / (lam_tc - lam_mo)) * (np.exp(-lam_mo * (t2 - tiempo_elucion)) - np.exp(-lam_tc * (t2 - tiempo_elucion)))
-
-# Unir vectores para graficar
-t_total = np.concatenate((t1, t2))
-A_mo_total = np.concatenate((A_mo1, A_mo2))
-A_tc_total = np.concatenate((A_tc1, A_tc2))
-
-# --- INTERFAZ ---
-col1, col2 = st.columns([1, 2])
-
-with col1:
-    st.subheader("📊 Estado del Generador")
-    st.metric(label="Actividad de Mo-99 al lavar", value=f"{A_mo_en_elucion:.2f} GBq")
-    st.metric(label="Tc-99m extraído (Teórico)", value=f"{(F * lam_tc * A_mo0 / (lam_tc - lam_mo)) * (np.exp(-lam_mo * tiempo_elucion) - np.exp(-lam_tc * tiempo_elucion)):.2f} GBq")
+with col_visual:
+    st.subheader("🏢 Animación de la Columna del Generador")
+    st.write(f"Estado de la columna tras **{tiempo_acumulado} horas** de acumulación:")
     
-    st.info("💡 **Análisis asincrónico:** Observá cómo tras la elución, el Tc-99m tarda aproximadamente 24 horas en alcanzar su máximo crecimiento (Equilibrio Transitorio) antes de empezar a decaer al ritmo del padre.")
-
-with col2:
-    fig, ax = plt.subplots(figsize=(10, 5))
-    ax.plot(t_total, A_mo_total, label="$^{99}$Mo (Padre)", color="red", lw=2)
-    ax.plot(t_total, A_tc_total, label="$^{99\\text{m}}$Tc (Hijo)", color="blue", lw=2)
-    ax.axvline(x=tiempo_elucion, color="green", linestyle="--", label="Elución (Lavado)")
+    # Simulación visual de la carga de la columna
+    st.write("🔴 **Actividad de Mo-99 (Padre retenido en la alúmina):**")
+    porcentaje_mo = min(100, int((act_mo_antes / A_mo0) * 100))
+    st.progress(porcentaje_mo / 100, text=f"{act_mo_antes:.2f} GBq restantes")
     
-    ax.set_xlabel("Tiempo (horas)")
+    st.write("🔵 **Actividad de Tc-99m (Hijo acumulado listo para extraer):**")
+    # El máximo teórico alcanzable es cercano al Mo, usamos eso como escala de la barra
+    porcentaje_tc = min(100, int((act_tc_antes / act_mo_antes) * 100))
+    st.progress(porcentaje_tc / 100, text=f"{act_tc_antes:.2f} GBq disponibles")
+    
+    st.write("---")
+    st.markdown("### 🤖 Operación de Radiofarmacia")
+    st.write("Presioná el botón para pasar la solución salina por la columna y extraer el Tc-99m hacia el vial vacío.")
+    
+    # BOTÓN ANIMADO CON SPINNER Y CELEBRACIÓN
+    if st.button("🧼 REALIZAR ELUCCIÓN (ORDEÑAR GENERADOR)"):
+        with st.spinner("⏳ Pasando solución salina por la columna de alúmina... arrastrando el Pertecnetato..."):
+            time.sleep(2.5) # Pausa dramática para simular el goteo real
+        
+        st.balloons() # Animación gráfica de festejo en pantalla
+        st.success(f"¡Elución completada con éxito!")
+        
+        # El Vial Blindado de salida
+        st.markdown("### 📦 Vial de Recogida Obtenido:")
+        st.info(f"🧪 **Contenido del Vial:** Pertecnetato de Sodio ($^{99\\text{m}}\\text{Tc}O_4^-$)\n\n"
+                f"🔥 **Actividad Extraída:** **{act_tc_antes:.2f} GBq**\n\n"
+                f"⏱️ **Hora del proceso:** {tiempo_acumulado} hs desde la carga.")
+        
+        st.metric(label="✨ Eficiencia de extracción teórica", value="95% - 100%")
+
+with col_grafico:
+    st.subheader("📈 Gráfico de Equilibrio Transitorio")
+    st.write("Observá cómo se intersectan las curvas en el punto máximo de crecimiento:")
+    
+    # Generar vectores para la gráfica antes del lavado
+    t = np.linspace(0, 96, 500)
+    A_mo_graf = A_mo0 * np.exp(-lam_mo * t)
+    A_tc_graf = (F * lam_tc * A_mo0 / (lam_tc - lam_mo)) * (np.exp(-lam_mo * t) - np.exp(-lam_tc * t))
+    
+    fig, ax = plt.subplots(figsize=(7, 5))
+    ax.plot(t, A_mo_graf, label="$^{99}$Mo (Padre retenido)", color="red", lw=2.5)
+    ax.plot(t, A_tc_graf, label="$^{99\\text{m}}$Tc (Hijo libre)", color="blue", lw=2.5, linestyle="--")
+    
+    # Línea que marca dónde decidió eluir el alumno
+    ax.axvline(x=tiempo_acumulado, color="green", linestyle=":", lw=2, label=f"Tu elución ({tiempo_acumulado} hs)")
+    ax.scatter(tiempo_acumulado, act_tc_antes, color="green", s=100, zorder=5)
+    
+    ax.set_xlabel("Tiempo acumulado (horas)")
     ax.set_ylabel("Actividad (GBq)")
-    ax.set_title("Curva de Crecimiento y Decaimiento en el Generador")
-    ax.legend()
+    ax.legend(loc="upper right")
     ax.grid(True, alpha=0.3)
     st.pyplot(fig)
+    
+    st.info("💡 **Guía de análisis:** Si movés el control de la izquierda a las **23-24 horas**, vas a ver que el hijo llega a su punto máximo (Equilibrio Transitorio). Lavar antes de ese tiempo implica sacar menos actividad; esperar mucho más significa perder decaimiento del padre de forma innecesaria.")
