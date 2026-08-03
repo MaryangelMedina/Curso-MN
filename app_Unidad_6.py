@@ -1093,7 +1093,6 @@ with tab_kerma:
         """
     )
 
-
 # =============================================================================
 # ESTACIÓN 5 · ACTIVIDAD ACUMULADA
 # =============================================================================
@@ -1113,9 +1112,7 @@ with tab_actividad:
         r"\widetilde{A}=\int A(t)\,dt"
     )
 
-    columna_1, columna_2, columna_3 = st.columns(
-        3
-    )
+    columna_1, columna_2, columna_3 = st.columns(3)
 
     with columna_1:
 
@@ -1124,6 +1121,7 @@ with tab_actividad:
             min_value=0.01,
             value=100.0,
             step=10.0,
+            key="actividad_inicial_acumulada",
         )
 
     with columna_2:
@@ -1133,6 +1131,7 @@ with tab_actividad:
             min_value=0.01,
             value=20.0,
             step=1.0,
+            key="vida_media_efectiva_acumulada",
         )
 
     with columna_3:
@@ -1142,24 +1141,41 @@ with tab_actividad:
             min_value=0.1,
             value=100.0,
             step=10.0,
+            key="tiempo_final_integracion",
         )
+
+    # -------------------------------------------------------------------------
+    # CONSTANTE DE DECAIMIENTO EFECTIVA
+    # -------------------------------------------------------------------------
 
     lambda_efectiva = (
         math.log(2)
         / vida_media_efectiva
     )
 
-    actividad_acumulada_infinita = calcular_actividad_acumulada_analitica(
-        actividad_inicial,
-        lambda_efectiva,
-        None,
+    # -------------------------------------------------------------------------
+    # INTEGRACIÓN ANALÍTICA
+    # -------------------------------------------------------------------------
+
+    actividad_acumulada_infinita = (
+        calcular_actividad_acumulada_analitica(
+            actividad_inicial,
+            lambda_efectiva,
+            None,
+        )
     )
 
-    actividad_acumulada_finita = calcular_actividad_acumulada_analitica(
-        actividad_inicial,
-        lambda_efectiva,
-        tiempo_final_integracion,
+    actividad_acumulada_finita = (
+        calcular_actividad_acumulada_analitica(
+            actividad_inicial,
+            lambda_efectiva,
+            tiempo_final_integracion,
+        )
     )
+
+    # -------------------------------------------------------------------------
+    # INTEGRACIÓN NUMÉRICA
+    # -------------------------------------------------------------------------
 
     cantidad_puntos = st.slider(
         "Cantidad de mediciones para integración numérica",
@@ -1167,10 +1183,11 @@ with tab_actividad:
         max_value=20,
         value=6,
         step=1,
+        key="cantidad_puntos_integracion",
     )
 
     tiempos_medicion = np.linspace(
-        0,
+        0.0,
         tiempo_final_integracion,
         cantidad_puntos,
     )
@@ -1181,26 +1198,38 @@ with tab_actividad:
         tiempos_medicion,
     )
 
-   actividad_acumulada_numerica = np.trapezoid(
-    actividades_medidas,
-    tiempos_medicion,
-)
+    actividad_acumulada_numerica = np.trapezoid(
+        actividades_medidas,
+        tiempos_medicion,
+    )
 
-    error_numerico = (
-        100
-        * abs(
-            actividad_acumulada_numerica
-            - actividad_acumulada_finita
+    # -------------------------------------------------------------------------
+    # DIFERENCIA ENTRE MÉTODOS
+    # -------------------------------------------------------------------------
+
+    if actividad_acumulada_finita > 0:
+
+        diferencia_relativa = (
+            100.0
+            * abs(
+                actividad_acumulada_numerica
+                - actividad_acumulada_finita
+            )
+            / actividad_acumulada_finita
         )
-        / actividad_acumulada_finita
-    )
 
-    metrica_1, metrica_2, metrica_3 = st.columns(
-        3
-    )
+    else:
+
+        diferencia_relativa = 0.0
+
+    # -------------------------------------------------------------------------
+    # RESULTADOS
+    # -------------------------------------------------------------------------
+
+    metrica_1, metrica_2, metrica_3 = st.columns(3)
 
     metrica_1.metric(
-        "Integral analítica hasta tiempo final",
+        "Integral analítica hasta el tiempo final",
         f"{actividad_acumulada_finita:.2f} MBq·h",
     )
 
@@ -1211,7 +1240,7 @@ with tab_actividad:
 
     metrica_3.metric(
         "Diferencia relativa",
-        f"{error_numerico:.2f} %",
+        f"{diferencia_relativa:.2f} %",
     )
 
     st.metric(
@@ -1219,8 +1248,12 @@ with tab_actividad:
         f"{actividad_acumulada_infinita:.2f} MBq·h",
     )
 
+    # -------------------------------------------------------------------------
+    # CURVA ACTIVIDAD-TIEMPO
+    # -------------------------------------------------------------------------
+
     tiempos_curva = np.linspace(
-        0,
+        0.0,
         tiempo_final_integracion,
         500,
     )
@@ -1254,7 +1287,7 @@ with tab_actividad:
         tiempos_curva,
         actividades_curva,
         alpha=0.25,
-        label="Actividad acumulada",
+        label="Área bajo la curva",
     )
 
     eje_actividad.set_xlabel(
@@ -1266,7 +1299,7 @@ with tab_actividad:
     )
 
     eje_actividad.set_title(
-        "Área bajo la curva actividad-tiempo"
+        "Actividad acumulada: área bajo la curva"
     )
 
     eje_actividad.grid(
@@ -1279,13 +1312,61 @@ with tab_actividad:
         figura_actividad
     )
 
+    # -------------------------------------------------------------------------
+    # TABLA DE MEDICIONES
+    # -------------------------------------------------------------------------
+
+    tabla_mediciones = pd.DataFrame(
+        {
+            "Tiempo (h)": tiempos_medicion,
+            "Actividad simulada (MBq)": actividades_medidas,
+        }
+    )
+
+    st.subheader(
+        "Puntos utilizados para la integración numérica"
+    )
+
+    st.dataframe(
+        tabla_mediciones,
+        use_container_width=True,
+        hide_index=True,
+    )
+
     st.info(
         """
-        Al aumentar la cantidad de mediciones, la integración numérica
-        generalmente se aproxima mejor al valor analítico de la curva ideal.
+        La integración analítica utiliza la ecuación completa de la curva
+        exponencial. La integración numérica estima el área utilizando los
+        puntos de medición disponibles.
+
+        Al aumentar la cantidad de mediciones, la aproximación numérica
+        generalmente se acerca al resultado analítico de la curva ideal.
         """
     )
 
+    with st.expander(
+        "📝 Preguntas de observación"
+    ):
+
+        st.markdown(
+            """
+            1. ¿Qué representa físicamente el área bajo la curva actividad-tiempo?
+
+            2. ¿Por qué la actividad acumulada tiene unidades de actividad
+            multiplicada por tiempo?
+
+            3. ¿Cómo cambia la diferencia entre los métodos al aumentar
+            la cantidad de mediciones?
+
+            4. ¿Qué ocurre si se acorta el tiempo final de integración?
+
+            5. ¿Por qué en un paciente real la curva puede no ser una
+            exponencial simple?
+
+            6. ¿Qué información faltaría para estimar la actividad acumulada
+            después de la última medición?
+            """
+        )
 
 # =============================================================================
 # ESTACIÓN 6 · TIEMPO DE RESIDENCIA
