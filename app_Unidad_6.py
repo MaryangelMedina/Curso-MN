@@ -1181,10 +1181,10 @@ with tab_actividad:
         tiempos_medicion,
     )
 
-    actividad_acumulada_numerica = np.trapz(
-        actividades_medidas,
-        tiempos_medicion,
-    )
+   actividad_acumulada_numerica = np.trapezoid(
+    actividades_medidas,
+    tiempos_medicion,
+)
 
     error_numerico = (
         100
