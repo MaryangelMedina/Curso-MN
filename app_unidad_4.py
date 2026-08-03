@@ -4,7 +4,6 @@ Laboratorio Virtual Nº 4
 Interacción de la Radiación con la Materia
 
 Curso de Metodología y Aplicación de Radioisótopos
-Disertante: Dr. Roberto Isoardi
 
 IMPORTANTE:
 Los coeficientes y modelos utilizados tienen finalidad educativa.
@@ -36,9 +35,8 @@ st.header("Interacción de la Radiación con la Materia")
 st.markdown(
     """
     **Unidad Nº 4**  
-    **Disertante:** Dr. Roberto Isoardi  
-    **Duración estimada:** 6 horas
-    """
+
+   
 )
 
 st.write(
@@ -51,7 +49,7 @@ st.write(
 
 st.warning(
     """
-    ⚠️ **Uso educativo:** los valores y modelos de esta aplicación son
+    ⚠️ **Uso educativo:** Los valores y modelos de esta aplicación son
     aproximaciones didácticas. No reemplazan tablas de coeficientes validadas,
     cálculos dosimétricos ni evaluaciones regulatorias.
     """
