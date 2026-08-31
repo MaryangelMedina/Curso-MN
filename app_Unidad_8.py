@@ -1473,310 +1473,558 @@ with tab2:
 
 
 # ============================================================
-# TAB 3 — COMPARADOR
+# TAB 3 — COMPARADOR DE DOSÍMETROS
 # ============================================================
 
 with tab3:
 
-    st.header(
-        "🔬 Comparador de dosímetros"
-    )
+    st.header("🔬 Comparador de dosímetros")
 
     st.write(
         """
-        Seleccioná un dosímetro y observá qué ocurre desde que recibe
-        radiación hasta que se obtiene la información dosimétrica.
+        No todos los dosímetros personales entregan la información
+        de la misma manera. Seleccioná cada tecnología y observá
+        qué ocurre desde que el trabajador recibe la exposición
+        hasta que obtiene el resultado dosimétrico.
         """
     )
 
-
     tipo = st.radio(
-
-        "Seleccioná el tipo de dosímetro:",
-
+        "Seleccioná el dosímetro que utiliza el trabajador:",
         [
             "TLD",
-
             "OSLD",
-
             "Dosímetro electrónico",
         ],
-
         horizontal=True,
-
-        key="tipo_dosimetro_u8",
-
+        key="comparador_u8",
     )
 
+    # --------------------------------------------------------
+    # Datos visuales según el tipo seleccionado
+    # --------------------------------------------------------
 
     if tipo == "TLD":
 
-        st.subheader(
-            "💎 Dosímetro termoluminiscente — TLD"
-        )
+        color = "#9b7be8"
+        titulo = "TLD"
+        nombre = "Dosímetro termoluminiscente"
+        dispositivo = "TLD"
 
-        st.markdown(
-            """
-            ### Secuencia conceptual
+        etapa1 = "☢️ EXPOSICIÓN"
+        etapa2 = "💎 TRAMPAS"
+        etapa3 = "🔥 CALENTAMIENTO"
+        etapa4 = "✨ LUZ"
+        etapa5 = "📊 RESULTADO"
 
-            **Radiación → almacenamiento en trampas → calentamiento → emisión de luz → lectura**
+        resultado = "DIFERIDO"
+        lectura = "Calentamiento"
+        durante = "No"
+        costo = "Menor"
 
-            El material almacena parte de la información producida
-            por la exposición. Posteriormente se induce la liberación
-            de los portadores mediante calentamiento.
-            """
-        )
-
-
-        html_comp = """
-        <div style="
-            background:#101820;
-            border:1px solid #445566;
-            border-radius:20px;
-            padding:35px;
-            color:white;
-            font-family:Arial;
-            text-align:center;
-            font-size:20px;
-            line-height:2.2;
-        ">
-
-        ☢️ Radiación
-
-        &nbsp; → &nbsp;
-
-        💎 Trampas
-
-        &nbsp; → &nbsp;
-
-        🔥 Calentamiento
-
-        &nbsp; → &nbsp;
-
-        ✨ Luz
-
-        &nbsp; → &nbsp;
-
-        📊 Dosis
-
-        </div>
+        explicacion = """
+        Durante el período de uso, la información queda almacenada
+        en el material termoluminiscente. Para obtener el resultado,
+        el dosímetro debe retirarse y procesarse en un sistema de lectura.
+        El calentamiento libera los portadores atrapados y se produce
+        una emisión luminosa relacionada con la exposición.
         """
-
-
-        st.components.v1.html(
-            html_comp,
-            height=170,
-        )
-
-
-        st.info(
-            "La información no se observa directamente durante la exposición; "
-            "requiere posteriormente un proceso de lectura."
-        )
-
 
     elif tipo == "OSLD":
 
-        st.subheader(
-            "🔵 Dosímetro de luminiscencia ópticamente estimulada — OSLD"
-        )
+        color = "#4ba6e8"
+        titulo = "OSLD"
+        nombre = "Dosímetro de luminiscencia ópticamente estimulada"
+        dispositivo = "OSLD"
 
-        st.markdown(
-            """
-            ### Secuencia conceptual
+        etapa1 = "☢️ EXPOSICIÓN"
+        etapa2 = "🔵 ALMACENAMIENTO"
+        etapa3 = "💡 ESTIMULACIÓN ÓPTICA"
+        etapa4 = "✨ LUZ"
+        etapa5 = "📊 RESULTADO"
 
-            **Radiación → almacenamiento → estimulación óptica → luminiscencia → lectura**
+        resultado = "DIFERIDO"
+        lectura = "Estimulación óptica"
+        durante = "No"
+        costo = "Menor / moderado"
 
-            En este caso, la liberación de la información almacenada
-            se produce mediante **estimulación óptica**.
-            """
-        )
-
-
-        html_comp = """
-        <div style="
-            background:#101820;
-            border:1px solid #445566;
-            border-radius:20px;
-            padding:35px;
-            color:white;
-            font-family:Arial;
-            text-align:center;
-            font-size:20px;
-            line-height:2.2;
-        ">
-
-        ☢️ Radiación
-
-        &nbsp; → &nbsp;
-
-        🔵 Almacenamiento
-
-        &nbsp; → &nbsp;
-
-        💡 Luz de estimulación
-
-        &nbsp; → &nbsp;
-
-        ✨ OSL
-
-        &nbsp; → &nbsp;
-
-        📊 Dosis
-
-        </div>
+        explicacion = """
+        La información producida por la exposición queda almacenada
+        en el material. Para realizar la lectura se utiliza una
+        estimulación óptica que libera parte de esa información en
+        forma de luminiscencia.
         """
-
-
-        st.components.v1.html(
-            html_comp,
-            height=170,
-        )
-
-
-        st.info(
-            "La presentación también aborda la estimulación OSL, "
-            "su lector y la pérdida de señal asociada a múltiples lecturas."
-        )
-
 
     else:
 
-        st.subheader(
-            "📟 Dosímetro electrónico de lectura directa"
-        )
+        color = "#5fc46d"
+        titulo = "ELECTRÓNICO"
+        nombre = "Dosímetro electrónico de lectura directa"
+        dispositivo = "DISPLAY"
 
-        st.markdown(
-            """
-            ### Secuencia conceptual
+        etapa1 = "☢️ EXPOSICIÓN"
+        etapa2 = "⚡ SEÑAL"
+        etapa3 = "🔌 ELECTRÓNICA"
+        etapa4 = "📟 PANTALLA"
+        etapa5 = "📊 RESULTADO"
 
-            **Radiación → detector → señal electrónica → procesamiento → lectura**
+        resultado = "INMEDIATO"
+        lectura = "Electrónica"
+        durante = "Sí"
+        costo = "Mayor"
 
-            A diferencia de los sistemas que requieren una lectura posterior,
-            el dosímetro electrónico permite visualizar información durante
-            su utilización.
-            """
-        )
+        explicacion = """
+        La radiación produce una señal que es procesada electrónicamente.
+        El trabajador puede disponer de información durante la utilización
+        del equipo, sin esperar un procesamiento posterior del dosímetro.
+        """
 
+    # --------------------------------------------------------
+    # Escena visual
+    # --------------------------------------------------------
 
-        dosis_electronico = st.slider(
+    html_comparador = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+    <meta charset="UTF-8">
 
-            "Dosis acumulada simulada (µSv)",
+    <style>
 
-            min_value=0,
+    body {{
+        margin: 0;
+        background: transparent;
+        font-family: Arial, sans-serif;
+        color: white;
+    }}
 
-            max_value=500,
+    .escena {{
+        width: 100%;
+        min-height: 620px;
+        background: linear-gradient(135deg,#101820,#0d1117);
+        border: 1px solid #394957;
+        border-radius: 24px;
+        padding: 28px;
+        box-sizing: border-box;
+    }}
 
-            value=25,
+    .titulo {{
+        text-align: center;
+        font-size: 25px;
+        font-weight: bold;
+        margin-bottom: 8px;
+    }}
 
-            step=5,
+    .subtitulo {{
+        text-align: center;
+        color: #b7c3cc;
+        font-size: 15px;
+        margin-bottom: 28px;
+    }}
 
-            key="dosis_electronico_u8",
+    .contenido {{
+        display: flex;
+        gap: 25px;
+        align-items: stretch;
+    }}
 
-        )
+    .trabajador {{
+        flex: 0.8;
+        min-height: 410px;
+        background: #17212b;
+        border: 1px solid #40505e;
+        border-radius: 20px;
+        position: relative;
+        overflow: hidden;
+    }}
 
+    .persona {{
+        position: relative;
+        width: 260px;
+        height: 370px;
+        margin: 25px auto 0 auto;
+    }}
 
-        tasa_electronico = st.slider(
+    .cabeza {{
+        position: absolute;
+        left: 94px;
+        top: 0;
+        width: 72px;
+        height: 82px;
+        border-radius: 50%;
+        background: #d5a47e;
+        border: 3px solid #987158;
+    }}
 
-            "Tasa de dosis simulada (µSv/h)",
+    .cabello {{
+        position: absolute;
+        left: -2px;
+        top: -3px;
+        width: 76px;
+        height: 27px;
+        border-radius: 40px 40px 15px 15px;
+        background: #332824;
+    }}
 
-            min_value=0,
+    .cuello {{
+        position: absolute;
+        left: 112px;
+        top: 74px;
+        width: 36px;
+        height: 37px;
+        background: #c99370;
+    }}
 
-            max_value=100,
+    .torso {{
+        position: absolute;
+        left: 60px;
+        top: 103px;
+        width: 140px;
+        height: 205px;
+        border-radius: 35px 35px 18px 18px;
+        background: linear-gradient(90deg,#e5e5e5,#ffffff,#e5e5e5);
+        border: 3px solid #9d9d9d;
+    }}
 
-            value=5,
+    .brazo-i,
+    .brazo-d {{
+        position: absolute;
+        top: 120px;
+        width: 45px;
+        height: 195px;
+        border-radius: 24px;
+        background: #ececec;
+        border: 3px solid #999;
+    }}
 
-            step=1,
+    .brazo-i {{
+        left: 24px;
+        transform: rotate(5deg);
+    }}
 
-            key="tasa_electronico_u8",
+    .brazo-d {{
+        right: 24px;
+        transform: rotate(-5deg);
+    }}
 
-        )
+    .pierna-i,
+    .pierna-d {{
+        position: absolute;
+        top: 295px;
+        width: 52px;
+        height: 70px;
+        background: #384b5c;
+    }}
 
+    .pierna-i {{
+        left: 72px;
+    }}
 
-        html_electronico = f"""
-        <div style="
-            width:430px;
-            height:260px;
-            margin:auto;
-            background:#252525;
-            border:4px solid #111;
-            border-radius:24px;
-            box-shadow:0 10px 24px rgba(0,0,0,.3);
-            padding-top:35px;
-            text-align:center;
-            font-family:Arial;
-        ">
+    .pierna-d {{
+        right: 72px;
+    }}
 
-            <div style="
-                margin:auto;
-                width:330px;
-                height:115px;
-                background:#cfe8c8;
-                border:3px solid #111;
-                border-radius:10px;
-                font-family:monospace;
-                color:#111;
-                padding-top:15px;
-            ">
+    .badge {{
+        position: absolute;
+        left: 112px;
+        top: 150px;
+        width: 38px;
+        height: 50px;
+        border-radius: 6px;
+        background: {color};
+        border: 3px solid white;
+        z-index: 10;
+        box-shadow: 0 0 15px {color};
+    }}
 
-                <div style="
-                    font-size:29px;
-                    font-weight:bold;
-                ">
+    .badge-display {{
+        position: absolute;
+        left: 5px;
+        top: 10px;
+        width: 28px;
+        height: 16px;
+        border-radius: 3px;
+        background: #d4eccd;
+        color: #111;
+        font-size: 7px;
+        text-align: center;
+        line-height: 16px;
+        font-weight: bold;
+    }}
 
-                    {dosis_electronico} µSv
+    .trabajador-texto {{
+        position: absolute;
+        bottom: 16px;
+        width: 100%;
+        text-align: center;
+        font-size: 16px;
+        color: #dbe5ec;
+    }}
+
+    .proceso {{
+        flex: 1.7;
+        min-height: 410px;
+        background: #131c25;
+        border: 1px solid #40505e;
+        border-radius: 20px;
+        padding: 22px;
+        box-sizing: border-box;
+    }}
+
+    .proceso h3 {{
+        text-align: center;
+        margin-top: 0;
+        color: {color};
+        font-size: 21px;
+    }}
+
+    .flujo {{
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-top: 18px;
+    }}
+
+    .etapa {{
+        width: 82%;
+        padding: 13px;
+        margin: 4px 0;
+        text-align: center;
+        background: #1d2a35;
+        border: 1px solid #465868;
+        border-radius: 12px;
+        font-size: 15px;
+        font-weight: bold;
+    }}
+
+    .flecha {{
+        color: {color};
+        font-size: 21px;
+        line-height: 20px;
+    }}
+
+    .resultado {{
+        margin-top: 18px;
+        background: {color};
+        color: #111;
+        padding: 14px;
+        text-align: center;
+        border-radius: 13px;
+        font-size: 18px;
+        font-weight: bold;
+    }}
+
+    .explicacion {{
+        margin-top: 25px;
+        background: #16222c;
+        border-left: 5px solid {color};
+        border-radius: 12px;
+        padding: 18px;
+        line-height: 1.55;
+        color: #e0e7ec;
+        font-size: 15px;
+    }}
+
+    </style>
+    </head>
+
+    <body>
+
+    <div class="escena">
+
+        <div class="titulo">
+            {nombre}
+        </div>
+
+        <div class="subtitulo">
+            Seguí el recorrido desde la exposición hasta la obtención del resultado
+        </div>
+
+        <div class="contenido">
+
+            <div class="trabajador">
+
+                <div class="persona">
+
+                    <div class="cabeza">
+                        <div class="cabello"></div>
+                    </div>
+
+                    <div class="cuello"></div>
+
+                    <div class="torso"></div>
+
+                    <div class="brazo-i"></div>
+
+                    <div class="brazo-d"></div>
+
+                    <div class="pierna-i"></div>
+
+                    <div class="pierna-d"></div>
+
+                    <div class="badge">
+
+                        {
+                            '<div class="badge-display">LIVE</div>'
+                            if tipo == "Dosímetro electrónico"
+                            else ""
+                        }
+
+                    </div>
 
                 </div>
 
-                <div style="
-                    font-size:21px;
-                    margin-top:12px;
-                ">
-
-                    {tasa_electronico} µSv/h
-
+                <div class="trabajador-texto">
+                    Personal ocupacionalmente expuesto<br>
+                    <b>{titulo}</b>
                 </div>
 
             </div>
 
-            <div style="
-                color:white;
-                font-size:18px;
-                margin-top:26px;
-                font-weight:bold;
-            ">
 
-                DOSÍMETRO ELECTRÓNICO
+            <div class="proceso">
+
+                <h3>¿Qué ocurre con la información?</h3>
+
+                <div class="flujo">
+
+                    <div class="etapa">{etapa1}</div>
+
+                    <div class="flecha">↓</div>
+
+                    <div class="etapa">{etapa2}</div>
+
+                    <div class="flecha">↓</div>
+
+                    <div class="etapa">{etapa3}</div>
+
+                    <div class="flecha">↓</div>
+
+                    <div class="etapa">{etapa4}</div>
+
+                    <div class="flecha">↓</div>
+
+                    <div class="etapa">{etapa5}</div>
+
+                </div>
+
+                <div class="resultado">
+                    RESULTADO {resultado}
+                </div>
 
             </div>
 
         </div>
-        """
 
+        <div class="explicacion">
+            {explicacion}
+        </div>
 
-        st.components.v1.html(
-            html_electronico,
-            height=300,
+    </div>
+
+    </body>
+    </html>
+    """
+
+    st.components.v1.html(
+        html_comparador,
+        height=680,
+        scrolling=False,
+    )
+
+    # --------------------------------------------------------
+    # Comparación rápida
+    # --------------------------------------------------------
+
+    st.subheader("📋 Comparación rápida")
+
+    c1, c2, c3, c4 = st.columns(4)
+
+    with c1:
+        st.metric(
+            "Resultado",
+            resultado,
         )
 
+    with c2:
+        st.metric(
+            "Forma de lectura",
+            lectura,
+        )
+
+    with c3:
+        st.metric(
+            "Información durante el uso",
+            durante,
+        )
+
+    with c4:
+        st.metric(
+            "Costo relativo",
+            costo,
+        )
+
+    st.caption(
+        """
+        La comparación de costos es cualitativa y tiene fines didácticos.
+        El costo real depende del sistema, proveedor, servicio de lectura
+        y modalidad de vigilancia dosimétrica.
+        """
+    )
+
+    # --------------------------------------------------------
+    # Pregunta interactiva
+    # --------------------------------------------------------
 
     st.divider()
 
+    st.subheader("🧠 Aplicalo a una situación")
 
-    st.subheader(
-        "Resumen rápido"
-    )
-
-
-    st.markdown(
+    st.write(
         """
-        | Tipo | ¿Almacena información? | Forma conceptual de lectura |
-        |---|---|---|
-        | **TLD** | Sí | Calentamiento → luz |
-        | **OSLD** | Sí | Estimulación óptica → luz |
-        | **Electrónico** | Procesamiento electrónico | Lectura directa |
+        Un trabajador necesita conocer **durante una tarea**
+        cómo está variando su exposición, sin esperar el procesamiento
+        posterior del dosímetro.
+
+        **¿Cuál sería la opción más adecuada entre estas tres tecnologías?**
         """
     )
+
+    respuesta_comparador = st.radio(
+        "Elegí una opción:",
+        [
+            "Todavía no respondí",
+            "TLD",
+            "OSLD",
+            "Dosímetro electrónico",
+        ],
+        key="respuesta_comparador_u8",
+    )
+
+    if respuesta_comparador == "Dosímetro electrónico":
+
+        st.success(
+            """
+            ✅ Correcto. En esta situación, el dosímetro electrónico
+            permite disponer de información durante su utilización.
+
+            En cambio, los sistemas TLD y OSLD almacenan información
+            que posteriormente debe ser obtenida mediante un proceso
+            de lectura.
+            """
+        )
+
+    elif respuesta_comparador in ["TLD", "OSLD"]:
+
+        st.warning(
+            """
+            🔎 Revisá el recorrido de la información.
+
+            Este tipo de dosímetro almacena información y requiere
+            posteriormente un proceso de lectura antes de obtener
+            el resultado.
+            """
+        )
 
 
 # ============================================================
@@ -1785,280 +2033,472 @@ with tab3:
 
 with tab4:
 
-    st.header(
-        "📐 Simulación conceptual de calibración"
-    )
+    st.header("📐 ¿Por qué calibramos un dosímetro?")
 
     st.write(
         """
-        Un dosímetro debe relacionar su respuesta con una referencia conocida.
+        En esta simulación, tres dosímetros son sometidos a una misma
+        **condición de referencia virtual**.
 
-        En esta actividad vas a comparar una **dosis de referencia**
-        con la lectura obtenida por distintos elementos de un dosímetro.
+        Tu objetivo es observar sus lecturas e identificar cuál presenta
+        una respuesta claramente diferente.
         """
     )
 
-
-    st.warning(
-        "⚠️ Los valores son exclusivamente didácticos. "
-        "La actividad no representa un procedimiento real de irradiación o calibración."
+    st.info(
+        """
+        🔎 Esta actividad representa solamente el concepto de comparación
+        con una referencia. No reproduce un procedimiento real de calibración.
+        """
     )
 
+    # --------------------------------------------------------
+    # Estado de la simulación
+    # --------------------------------------------------------
 
-    dosis_referencia = st.slider(
+    if "calibracion_realizada_u8" not in st.session_state:
+        st.session_state.calibracion_realizada_u8 = False
 
-        "Dosis de referencia simulada (mSv)",
+    if "respuesta_calibracion_u8" not in st.session_state:
+        st.session_state.respuesta_calibracion_u8 = "Todavía no respondí"
 
-        min_value=0.1,
+    referencia = 1.00
 
-        max_value=10.0,
+    lectura_a = 0.98
+    lectura_b = 1.01
+    lectura_c = 0.40
 
-        value=2.0,
+    # --------------------------------------------------------
+    # Escena inicial
+    # --------------------------------------------------------
 
-        step=0.1,
+    html_calibracion = """
+    <!DOCTYPE html>
+    <html>
+    <head>
+    <meta charset="UTF-8">
 
-        key="dosis_referencia_u8",
+    <style>
 
+    body {
+        margin: 0;
+        background: transparent;
+        font-family: Arial, sans-serif;
+        color: white;
+    }
+
+    .laboratorio {
+        width: 100%;
+        min-height: 440px;
+        background: linear-gradient(135deg,#101820,#0c1117);
+        border: 1px solid #3b4b59;
+        border-radius: 24px;
+        padding: 28px;
+        box-sizing: border-box;
+    }
+
+    .titulo {
+        text-align: center;
+        font-size: 24px;
+        font-weight: bold;
+        margin-bottom: 10px;
+    }
+
+    .subtitulo {
+        text-align: center;
+        color: #b8c3cc;
+        font-size: 15px;
+        margin-bottom: 30px;
+    }
+
+    .referencia {
+        width: 260px;
+        margin: auto;
+        text-align: center;
+        background: #202c37;
+        border: 2px solid #e2b24a;
+        border-radius: 18px;
+        padding: 18px;
+    }
+
+    .simbolo {
+        font-size: 42px;
+    }
+
+    .valor-ref {
+        font-size: 27px;
+        font-weight: bold;
+        margin-top: 5px;
+        color: #ffd466;
+    }
+
+    .flecha {
+        text-align: center;
+        font-size: 35px;
+        color: #e2b24a;
+        margin: 12px;
+    }
+
+    .dosimetros {
+        display: flex;
+        justify-content: center;
+        gap: 45px;
+        margin-top: 10px;
+    }
+
+    .dosimetro {
+        width: 180px;
+        height: 145px;
+        border-radius: 18px;
+        background: #252525;
+        border: 3px solid #111;
+        box-shadow: 0 8px 18px rgba(0,0,0,.30);
+        text-align: center;
+        padding-top: 18px;
+        box-sizing: border-box;
+    }
+
+    .pantalla {
+        width: 130px;
+        height: 60px;
+        margin: auto;
+        border-radius: 7px;
+        background: #cde7c7;
+        border: 2px solid #111;
+        color: #111;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: monospace;
+        font-size: 18px;
+        font-weight: bold;
+    }
+
+    .nombre {
+        margin-top: 13px;
+        font-size: 18px;
+        font-weight: bold;
+    }
+
+    </style>
+
+    </head>
+
+    <body>
+
+    <div class="laboratorio">
+
+        <div class="titulo">
+            Comparación con una referencia conocida
+        </div>
+
+        <div class="subtitulo">
+            Los tres dosímetros reciben la misma condición de referencia virtual
+        </div>
+
+        <div class="referencia">
+
+            <div class="simbolo">
+                ☢️
+            </div>
+
+            <div>
+                REFERENCIA
+            </div>
+
+            <div class="valor-ref">
+                1,00 mSv
+            </div>
+
+        </div>
+
+        <div class="flecha">
+            ↓
+        </div>
+
+        <div class="dosimetros">
+
+            <div class="dosimetro">
+
+                <div class="pantalla">
+                    DOSÍMETRO
+                </div>
+
+                <div class="nombre">
+                    A
+                </div>
+
+            </div>
+
+            <div class="dosimetro">
+
+                <div class="pantalla">
+                    DOSÍMETRO
+                </div>
+
+                <div class="nombre">
+                    B
+                </div>
+
+            </div>
+
+            <div class="dosimetro">
+
+                <div class="pantalla">
+                    DOSÍMETRO
+                </div>
+
+                <div class="nombre">
+                    C
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    </body>
+    </html>
+    """
+
+    st.components.v1.html(
+        html_calibracion,
+        height=470,
+        scrolling=False,
     )
 
+    # --------------------------------------------------------
+    # Botón de medición
+    # --------------------------------------------------------
 
-    dispersion = st.slider(
-
-        "Variación de sensibilidad entre elementos (%)",
-
-        min_value=0,
-
-        max_value=20,
-
-        value=8,
-
-        step=1,
-
-        key="dispersion_u8",
-
+    centro_boton = st.columns(
+        [1, 1, 1]
     )
 
+    with centro_boton[1]:
 
-    semilla = int(
+        if st.button(
+            "▶ REALIZAR COMPARACIÓN VIRTUAL",
+            use_container_width=True,
+            key="boton_calibracion_u8",
+        ):
 
-        dosis_referencia
-        *
-        100
+            st.session_state.calibracion_realizada_u8 = True
+            st.session_state.respuesta_calibracion_u8 = "Todavía no respondí"
 
-        +
+    # --------------------------------------------------------
+    # Mostrar resultados
+    # --------------------------------------------------------
 
-        dispersion
-        *
-        31
+    if st.session_state.calibracion_realizada_u8:
 
-    )
+        st.subheader("📊 Lecturas obtenidas")
 
+        col_a, col_b, col_c = st.columns(3)
 
-    rng = np.random.default_rng(
-        semilla
-    )
+        with col_a:
 
-
-    respuestas = (
-
-        dosis_referencia
-
-        *
-
-        (
-            1
-
-            +
-
-            rng.normal(
-
-                0,
-
-                dispersion / 100,
-
-                4,
-
+            st.metric(
+                "Dosímetro A",
+                f"{lectura_a:.2f} mSv",
             )
 
-        )
+        with col_b:
 
-    )
+            st.metric(
+                "Dosímetro B",
+                f"{lectura_b:.2f} mSv",
+            )
 
+        with col_c:
 
-    promedio = float(
+            st.metric(
+                "Dosímetro C",
+                f"{lectura_c:.2f} mSv",
+            )
 
-        np.mean(
-            respuestas
-        )
+        # ----------------------------------------------------
+        # Barras visuales
+        # ----------------------------------------------------
 
-    )
+        fig_comparacion = go.Figure()
 
-
-    factor_correccion = (
-
-        dosis_referencia
-
-        /
-
-        promedio
-
-    )
-
-
-    corregidas = (
-
-        respuestas
-
-        *
-
-        factor_correccion
-
-    )
-
-
-    col1, col2 = st.columns(
-        [1.2, 0.8]
-    )
-
-
-    with col1:
-
-        fig_cal = go.Figure()
-
-
-        etiquetas = [
-
-            "Elemento 1",
-
-            "Elemento 2",
-
-            "Elemento 3",
-
-            "Elemento 4",
-
-        ]
-
-
-        fig_cal.add_trace(
-
+        fig_comparacion.add_trace(
             go.Bar(
-
-                x=etiquetas,
-
-                y=respuestas,
-
-                name="Lectura inicial",
-
+                x=[
+                    "Referencia",
+                    "Dosímetro A",
+                    "Dosímetro B",
+                    "Dosímetro C",
+                ],
+                y=[
+                    referencia,
+                    lectura_a,
+                    lectura_b,
+                    lectura_c,
+                ],
+                text=[
+                    "1,00 mSv",
+                    "0,98 mSv",
+                    "1,01 mSv",
+                    "0,40 mSv",
+                ],
+                textposition="outside",
+                name="Lectura",
             )
-
         )
 
-
-        fig_cal.add_trace(
-
-            go.Bar(
-
-                x=etiquetas,
-
-                y=corregidas,
-
-                name="Lectura corregida",
-
-            )
-
+        fig_comparacion.update_layout(
+            title="Comparación de las lecturas",
+            yaxis_title="Lectura simulada (mSv)",
+            yaxis=dict(
+                range=[0, 1.2]
+            ),
+            height=430,
+            showlegend=False,
         )
-
-
-        fig_cal.add_hline(
-
-            y=dosis_referencia,
-
-            line_dash="dash",
-
-            annotation_text="Referencia",
-
-        )
-
-
-        fig_cal.update_layout(
-
-            title="Respuesta de los elementos",
-
-            yaxis_title="Dosis simulada (mSv)",
-
-            barmode="group",
-
-            height=470,
-
-        )
-
 
         st.plotly_chart(
-            fig_cal,
+            fig_comparacion,
             use_container_width=True,
         )
 
-
-    with col2:
-
-        st.metric(
-
-            "Referencia",
-
-            f"{dosis_referencia:.2f} mSv",
-
+        st.subheader(
+            "🧠 Analizá el resultado"
         )
 
+        st.write(
+            """
+            Los tres dosímetros fueron sometidos a la misma condición
+            de referencia virtual de **1,00 mSv**.
 
-        st.metric(
-
-            "Promedio antes de corregir",
-
-            f"{promedio:.2f} mSv",
-
+            **¿Cuál presenta una respuesta claramente diferente?**
+            """
         )
 
-
-        st.metric(
-
-            "Factor de corrección conceptual",
-
-            f"{factor_correccion:.3f}",
-
+        respuesta = st.radio(
+            "Seleccioná un dosímetro:",
+            [
+                "Todavía no respondí",
+                "Dosímetro A",
+                "Dosímetro B",
+                "Dosímetro C",
+            ],
+            key="respuesta_calibracion_u8",
         )
 
+        if respuesta == "Dosímetro C":
 
-        promedio_corregido = float(
+            st.success(
+                """
+                ✅ Correcto.
 
-            np.mean(
-                corregidas
+                El **Dosímetro C** informa **0,40 mSv**, mientras que
+                la referencia virtual es **1,00 mSv**.
+
+                Su respuesta es claramente diferente de la esperada.
+                """
             )
 
-        )
+            # ------------------------------------------------
+            # IMPORTANCIA DE LA CALIBRACIÓN
+            # ------------------------------------------------
 
+            st.markdown(
+                """
+                <div style="
+                    background:linear-gradient(135deg,#172738,#12202d);
+                    border:2px solid #55a9e8;
+                    border-radius:20px;
+                    padding:25px;
+                    margin-top:20px;
+                    color:white;
+                ">
 
-        st.metric(
+                    <div style="
+                        font-size:24px;
+                        font-weight:bold;
+                        margin-bottom:14px;
+                        color:#72c2ff;
+                    ">
+                        📐 ¿Por qué es importante la calibración?
+                    </div>
 
-            "Promedio corregido",
+                    <div style="
+                        font-size:17px;
+                        line-height:1.65;
+                    ">
 
-            f"{promedio_corregido:.2f} mSv",
+                        Un dosímetro puede generar una lectura aunque su
+                        respuesta no represente adecuadamente la exposición
+                        recibida.
 
-        )
+                        <br><br>
 
+                        La calibración permite relacionar la respuesta del
+                        dosímetro con una <b>referencia conocida</b> y comprobar
+                        que la información obtenida sea adecuada para la
+                        vigilancia dosimétrica.
 
-    st.success(
-        """
-        La simulación muestra la idea de que distintos elementos pueden presentar
-        respuestas diferentes y que la caracterización/calibración permite
-        relacionar esa respuesta con una referencia.
-        """
-    )
+                        <br><br>
 
+                        En esta simulación, la referencia es
+                        <b>1,00 mSv</b>, pero el Dosímetro C informa solamente
+                        <b>0,40 mSv</b>.
 
-    st.caption(
-        """
-        Esta actividad representa conceptualmente la homogeneización de la respuesta
-        y los factores de sensibilidad. No reproduce el procedimiento de calibración
-        de un servicio real.
-        """
-    )
+                        <br><br>
+
+                        Una diferencia de esta magnitud produciría una
+                        <b>subestimación de la exposición registrada</b>.
+
+                    </div>
+
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+
+            st.markdown("### 🔎 Miralo de otra manera")
+
+            col_real, col_lectura = st.columns(2)
+
+            with col_real:
+
+                st.metric(
+                    "Referencia virtual",
+                    "1,00 mSv",
+                )
+
+            with col_lectura:
+
+                st.metric(
+                    "Lectura informada",
+                    "0,40 mSv",
+                    delta="-0,60 mSv",
+                )
+
+            st.warning(
+                """
+                **El registro no representa adecuadamente la condición
+                de referencia.**
+
+                Por eso no alcanza con que un dosímetro simplemente
+                produzca una lectura: es necesario conocer y verificar
+                su respuesta.
+                """
+            )
+
+        elif respuesta in [
+            "Dosímetro A",
+            "Dosímetro B",
+        ]:
+
+            st.warning(
+                """
+                🔎 Observá nuevamente las cuatro barras.
+
+                Compará cada lectura con la referencia de **1,00 mSv**
+                y buscá cuál se aleja de manera más evidente.
+                """
+            )
