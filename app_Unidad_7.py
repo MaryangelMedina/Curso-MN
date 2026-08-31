@@ -705,6 +705,8 @@ with tab2:
             font-weight: bold;
 
             font-size: 18px;
+
+            color: white;
         }}
 
 
