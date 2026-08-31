@@ -1599,8 +1599,7 @@ with tab2:
             )
         ):
 
-            px, py =
-                posiciones[i]
+        px, py = posiciones[i]
 
             puntos += f"""
 
@@ -1647,8 +1646,7 @@ with tab2:
             )
         ):
 
-            px, py =
-                posiciones[i]
+         px, py = posiciones[i]
 
             puntos_visibles += f"""
 
