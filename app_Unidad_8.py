@@ -1601,7 +1601,7 @@ with tab3:
 
     .escena {{
         width: 100%;
-        min-height: 760px;
+        min-height: 620px;
         background: linear-gradient(135deg,#101820,#0d1117);
         border: 1px solid #394957;
         border-radius: 24px;
@@ -2378,95 +2378,93 @@ with tab4:
             """
         )
 
-       respuesta = st.radio(
-    "Seleccioná un dosímetro:",
-    [
-        "Todavía no respondí",
-        "Dosímetro A",
-        "Dosímetro B",
-        "Dosímetro C",
-    ],
-    key="respuesta_calibracion_u8",
-)
-
-if respuesta == "Dosímetro C":
-
-    st.success(
-        """
-        ✅ Correcto.
-
-        El **Dosímetro C** informa **0,40 mSv**, mientras que
-        la referencia virtual es **1,00 mSv**.
-
-        Su respuesta es claramente diferente de la esperada.
-        """
-    )
-
-    st.markdown("### 📐 ¿Por qué es importante la calibración?")
-
-    st.write(
-        """
-        Un dosímetro puede generar una lectura aunque su respuesta
-        no represente adecuadamente la exposición recibida.
-
-        La calibración permite relacionar la respuesta del dosímetro
-        con una **referencia conocida** y comprobar que la información
-        obtenida sea adecuada para la vigilancia dosimétrica.
-
-        En esta simulación, la referencia es **1,00 mSv**, pero el
-        Dosímetro C informa solamente **0,40 mSv**.
-
-        Una diferencia de esta magnitud produciría una
-        **subestimación de la exposición registrada**.
-        """
-    )
-
-    st.markdown("### 🔎 Miralo de otra manera")
-
-    col_ref, col_c = st.columns(2)
-
-    with col_ref:
-        st.metric(
-            "Referencia virtual",
-            "1,00 mSv"
+        respuesta = st.radio(
+            "Seleccioná un dosímetro:",
+            [
+                "Todavía no respondí",
+                "Dosímetro A",
+                "Dosímetro B",
+                "Dosímetro C",
+            ],
+            key="respuesta_calibracion_u8",
         )
 
-    with col_c:
-        st.metric(
-            "Dosímetro C",
-            "0,40 mSv",
-            delta="-0,60 mSv"
-        )
+        if respuesta == "Dosímetro C":
 
-    st.info(
-        """
-        💡 La calibración permite comprobar que la respuesta del
-        dosímetro sea consistente con una referencia conocida.
-        """
-    )
+            st.success(
+                """
+                ✅ Correcto.
 
+                El **Dosímetro C** informa **0,40 mSv**, mientras que
+                la referencia virtual es **1,00 mSv**.
 
-elif respuesta in ["Dosímetro A", "Dosímetro B"]:
+                Su respuesta es claramente diferente de la esperada.
+                """
+            )
 
-    st.warning(
-        """
-        🔎 Observá nuevamente las lecturas.
+            # ------------------------------------------------
+            # IMPORTANCIA DE LA CALIBRACIÓN
+            # ------------------------------------------------
 
-        Los dosímetros A y B presentan valores próximos a la
-        referencia virtual de **1,00 mSv**.
+            st.markdown("### 📐 ¿Por qué es importante la calibración?")
 
-        Hay otro dosímetro cuya respuesta se aleja claramente
-        de ese valor.
-        """
-    )
+            st.write(
+                """
+                Un dosímetro puede generar una lectura aunque su respuesta
+                no represente adecuadamente la exposición recibida.
 
+                La calibración permite relacionar la respuesta del dosímetro
+                con una **referencia conocida** y comprobar que la información
+                obtenida sea adecuada para la vigilancia dosimétrica.
 
-else:
+                En esta simulación, la referencia es **1,00 mSv**, pero el
+                Dosímetro C informa solamente **0,40 mSv**.
 
-    st.info(
-        """
-        👆 Compará las tres lecturas con la referencia virtual
-        y seleccioná el dosímetro que presenta una respuesta
-        claramente diferente.
-        """
-    )
+                Una diferencia de esta magnitud produciría una
+                **subestimación de la exposición registrada**.
+                """
+            )
+
+            st.markdown("### 🔎 Miralo de otra manera")
+
+            col_real, col_lectura = st.columns(2)
+
+            with col_real:
+
+                st.metric(
+                    "Referencia virtual",
+                    "1,00 mSv",
+                )
+
+            with col_lectura:
+
+                st.metric(
+                    "Lectura informada",
+                    "0,40 mSv",
+                    delta="-0,60 mSv",
+                )
+
+            st.warning(
+                """
+                **El registro no representa adecuadamente la condición
+                de referencia.**
+
+                Por eso no alcanza con que un dosímetro simplemente
+                produzca una lectura: es necesario conocer y verificar
+                su respuesta.
+                """
+            )
+
+        elif respuesta in [
+            "Dosímetro A",
+            "Dosímetro B",
+        ]:
+
+            st.warning(
+                """
+                🔎 Observá nuevamente las cuatro barras.
+
+                Compará cada lectura con la referencia de **1,00 mSv**
+                y buscá cuál se aleja de manera más evidente.
+                """
+            )
