@@ -1592,27 +1592,27 @@ with tab2:
         ]
 
 
-        for i in range(
-            min(
-                cantidad,
-                len(posiciones)
-            )
-        ):
+   for i in range(
+    min(
+        cantidad,
+        len(posiciones)
+    )
+):
 
-        px, py = posiciones[i]
+    px, py = posiciones[i]
 
-            puntos += f"""
+    puntos += f"""
 
-            <circle
-                cx="{px}"
-                cy="{py}"
-                r="8"
-                fill="#56b9ff"
-                stroke="#d6f2ff"
-                stroke-width="2"
-            />
+    <circle
+        cx="{px}"
+        cy="{py}"
+        r="8"
+        fill="#56b9ff"
+        stroke="#d6f2ff"
+        stroke-width="2"
+    />
 
-            """
+    """
 
 
         fraccion_liberada = max(
@@ -1639,27 +1639,27 @@ with tab2:
 
         puntos_visibles = ""
 
-        for i in range(
-            min(
-                visibles,
-                len(posiciones)
-            )
-        ):
+       for i in range(
+    min(
+        visibles,
+        len(posiciones)
+    )
+):
 
-         px, py = posiciones[i]
+    px, py = posiciones[i]
 
-            puntos_visibles += f"""
+    puntos_visibles += f"""
 
-            <circle
-                cx="{px}"
-                cy="{py}"
-                r="8"
-                fill="#56b9ff"
-                stroke="#d6f2ff"
-                stroke-width="2"
-            />
+    <circle
+        cx="{px}"
+        cy="{py}"
+        r="8"
+        fill="#56b9ff"
+        stroke="#d6f2ff"
+        stroke-width="2"
+    />
 
-            """
+    """
 
 
         destellos = ""
