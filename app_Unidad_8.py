@@ -2406,9 +2406,9 @@ with tab4:
             # IMPORTANCIA DE LA CALIBRACIÓN
             # ------------------------------------------------
 
-       st.markdown("### 📐 ¿Por qué es importante la calibración?")
+           st.markdown("### 📐 ¿Por qué es importante la calibración?")
 
-st.write(
+    st.write(
     """
     Un dosímetro puede generar una lectura aunque su respuesta
     no represente adecuadamente la exposición recibida.
