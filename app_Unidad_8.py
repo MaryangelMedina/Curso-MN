@@ -515,17 +515,11 @@ with tab1:
             <div id="mano-izq"></div>
             <div id="mano-der"></div>
 
-            <div class="zona" id="zona-ojos">
-                CRISTALINO
-            </div>
-
-            <div class="zona" id="zona-pecho">
-                CUERPO<br>ENTERO
-            </div>
-
-            <div class="zona" id="zona-mano">
-                EXTREMIDAD
-            </div>
+          <div class="zona" id="zona-ojos"></div>
+          
+          <div class="zona" id="zona-pecho"></div>
+          
+          <div class="zona" id="zona-mano"></div>
 
         </div>
 
