@@ -18,7 +18,8 @@ st.write(
 )
 
 st.info(
-    "🔎 Simulación educativa. Las lecturas son representaciones didácticas y no reemplazan mediciones reales."
+    "🔎 Simulación educativa. Las lecturas y conversiones mostradas son representaciones didácticas "
+    "y no reemplazan mediciones, calibraciones ni procedimientos reales."
 )
 
 tab1, tab2, tab3 = st.tabs(
@@ -79,9 +80,7 @@ with tab1:
     x = np.linspace(0, 1650, 600)
 
     y_beta = np.piecewise(
-
         x,
-
         [
             x < 100,
             (x >= 100) & (x < 320),
@@ -90,7 +89,6 @@ with tab1:
             (x >= 980) & (x < 1450),
             x >= 1450
         ],
-
         [
             lambda z: 10 ** (2.2 + 0.01*z),
             lambda z: 10 ** 3.2,
@@ -190,6 +188,39 @@ with tab1:
         f"📍 Región actual: **{region}**"
     )
 
+    if "ionización" in region:
+
+        st.write(
+            """
+            En esta región se recolectan principalmente los pares de iones
+            producidos por la radiación.
+
+            Una aplicación típica es el **activímetro**.
+            """
+        )
+
+    elif "proporcional" in region.lower():
+
+        st.write(
+            """
+            En esta región ocurre multiplicación gaseosa.
+
+            La amplitud del pulso conserva información relacionada
+            con la energía depositada.
+            """
+        )
+
+    elif "Geiger" in region:
+
+        st.write(
+            """
+            En la región Geiger-Müller cada evento produce una gran avalancha.
+
+            El detector permite contar eventos, pero la amplitud del pulso
+            ya no informa la energía de la radiación.
+            """
+        )
+
 
 # =========================================================
 # 2. ACTIVÍMETRO ARRASTRABLE
@@ -202,11 +233,14 @@ with tab2:
     st.write(
         """
         Arrastrá la jeringa con el mouse e introducila en el pozo del activímetro.
+
         La pantalla cambia según la posición de la jeringa.
         """
     )
 
-    col1, col2 = st.columns([1.45, 0.55])
+    col1, col2 = st.columns(
+        [1.45, 0.55]
+    )
 
     with col2:
 
@@ -217,7 +251,8 @@ with tab2:
                 "F-18",
                 "I-131",
                 "Lu-177"
-            ]
+            ],
+            key="iso_real_u7"
         )
 
         isotopo_equipo = st.selectbox(
@@ -227,29 +262,56 @@ with tab2:
                 "F-18",
                 "I-131",
                 "Lu-177"
-            ]
+            ],
+            key="iso_equipo_u7"
         )
 
         actividad = st.slider(
             "Actividad de la jeringa (MBq)",
             min_value=1,
             max_value=1200,
-            value=600
+            value=600,
+            key="actividad_u7"
+        )
+
+        fondo_activimetro = st.slider(
+            "Fondo simulado del activímetro (MBq)",
+            min_value=0.00,
+            max_value=2.00,
+            value=0.05,
+            step=0.01,
+            key="fondo_act_u7"
         )
 
         if isotopo_real == isotopo_equipo:
-            st.success("✅ Radionucleido seleccionado correctamente.")
+
+            st.success(
+                "✅ Radionucleido seleccionado correctamente."
+            )
+
         else:
-            st.warning("⚠️ El radionucleido seleccionado no coincide con la muestra.")
+
+            st.warning(
+                "⚠️ El radionucleido seleccionado no coincide con la muestra."
+            )
 
         st.caption(
-            "La lectura dentro del simulador es conceptual y depende de la posición de la jeringa."
+            """
+            El fondo y la respuesta con la jeringa fuera del pozo
+            son valores didácticos.
+
+            El blindaje del activímetro se representa de forma visual.
+            """
         )
 
     factores = {
+
         "Tc-99m": 1.00,
+
         "F-18": 1.07,
+
         "I-131": 0.94,
+
         "Lu-177": 0.98
     }
 
@@ -262,10 +324,14 @@ with tab2:
     with col1:
 
         html_activimetro = f"""
+
         <!DOCTYPE html>
+
         <html>
 
         <head>
+
+        <meta charset="UTF-8">
 
         <style>
 
@@ -279,18 +345,26 @@ with tab2:
         #lab {{
             position: relative;
             width: 100%;
-            height: 700px;
+            height: 760px;
         }}
 
         #equipo {{
             position: absolute;
+
             left: 50%;
-            top: 245px;
+
+            top: 285px;
+
             transform: translateX(-50%);
-            width: 610px;
-            height: 360px;
-            border-radius: 32px;
+
+            width: 650px;
+
+            height: 390px;
+
+            border-radius: 34px;
+
             border: 4px solid #777;
+
             background:
                 linear-gradient(
                     90deg,
@@ -298,16 +372,63 @@ with tab2:
                     #f7f7f7,
                     #c3c3c3
                 );
+
             box-shadow:
                 0 12px 28px rgba(0,0,0,.25);
         }}
 
+
+        /* Blindaje esquemático */
+
+        #blindaje1 {{
+            position: absolute;
+
+            left: 86px;
+
+            top: 34px;
+
+            width: 280px;
+
+            height: 300px;
+
+            border-radius: 42px;
+
+            border: 18px solid #777;
+
+            box-sizing: border-box;
+        }}
+
+
+        #blindaje2 {{
+            position: absolute;
+
+            left: 105px;
+
+            top: 52px;
+
+            width: 242px;
+
+            height: 265px;
+
+            border-radius: 36px;
+
+            border: 10px solid #a2a2a2;
+
+            box-sizing: border-box;
+        }}
+
+
         #pozo {{
             position: absolute;
-            left: 120px;
-            top: 54px;
-            width: 190px;
-            height: 215px;
+
+            left: 142px;
+
+            top: 93px;
+
+            width: 170px;
+
+            height: 205px;
+
             background:
                 linear-gradient(
                     90deg,
@@ -315,189 +436,328 @@ with tab2:
                     #222,
                     #5a5a5a
                 );
-            border-radius: 0 0 55px 55px;
+
+            border-radius:
+                0 0 50px 50px;
         }}
+
 
         #boca {{
             position: absolute;
-            left: 108px;
-            top: 28px;
-            width: 215px;
-            height: 55px;
+
+            left: 125px;
+
+            top: 66px;
+
+            width: 205px;
+
+            height: 58px;
+
             background: #1a1a1a;
+
             border-radius: 50%;
+
             border: 6px solid #555;
         }}
 
+
         #entrada {{
             position: absolute;
-            left: 148px;
-            top: 47px;
+
+            left: 160px;
+
+            top: 82px;
+
             width: 135px;
-            height: 32px;
+
+            height: 34px;
+
             background: #050505;
+
             border-radius: 50%;
         }}
 
+
         #panel {{
             position: absolute;
-            right: 40px;
-            top: 72px;
-            width: 170px;
-            height: 190px;
+
+            right: 38px;
+
+            top: 85px;
+
+            width: 190px;
+
+            height: 210px;
+
             border-radius: 18px;
+
             background: #252525;
+
             box-shadow:
                 inset 0 0 0 2px #111;
         }}
 
+
         #pantalla {{
             position: absolute;
-            left: 18px;
-            top: 22px;
-            width: 134px;
-            height: 68px;
+
+            left: 15px;
+
+            top: 18px;
+
+            width: 160px;
+
+            height: 92px;
+
             background: #cce9c6;
+
             border-radius: 8px;
+
             border: 3px solid #111;
+
             text-align: center;
+
             font-family: monospace;
         }}
 
-        #lectura {{
-            font-size: 25px;
+
+        #lecturaMBq {{
+            font-size: 20px;
+
             font-weight: bold;
-            margin-top: 9px;
+
+            margin-top: 13px;
+
+            line-height: 1.25;
         }}
 
-        #unidad {{
-            font-size: 15px;
+
+        #lecturamCi {{
+            font-size: 17px;
+
+            margin-top: 4px;
         }}
+
 
         #iso {{
             position: absolute;
-            top: 105px;
+
+            top: 125px;
+
             width: 100%;
+
             text-align: center;
+
             color: white;
+
             font-weight: bold;
         }}
 
+
         .boton {{
             position: absolute;
-            bottom: 26px;
+
+            bottom: 24px;
+
             width: 22px;
+
             height: 22px;
+
             border-radius: 50%;
+
             background: #777;
         }}
 
+
         #b1 {{
-            left: 35px;
+            left: 42px;
         }}
+
 
         #b2 {{
-            left: 72px;
+            left: 82px;
         }}
 
+
         #b3 {{
-            left: 109px;
+            left: 122px;
         }}
+
 
         #jeringa {{
             position: absolute;
+
             left: calc(50% - 40px);
-            top: 35px;
+
+            top: 40px;
+
             width: 80px;
-            height: 175px;
+
+            height: 180px;
+
             cursor: grab;
+
             user-select: none;
+
             z-index: 50;
         }}
+
 
         #jeringa:active {{
             cursor: grabbing;
         }}
 
+
         #embolo {{
             position: absolute;
+
             left: 18px;
+
             top: 0;
+
             width: 44px;
+
             height: 15px;
+
             background: #d6d6d6;
+
             border-radius: 5px;
+
             border: 2px solid #888;
         }}
 
+
         #vastago {{
             position: absolute;
+
             left: 34px;
+
             top: 14px;
+
             width: 12px;
+
             height: 30px;
+
             background: #bbb;
         }}
 
+
         #cuerpo-jeringa {{
             position: absolute;
+
             left: 16px;
+
             top: 42px;
+
             width: 48px;
+
             height: 82px;
+
             border-radius: 8px;
+
             border: 3px solid #537180;
+
             background: #eaf7ff;
         }}
 
+
         #liquido {{
             position: absolute;
+
             left: 21px;
+
             top: 83px;
+
             width: 38px;
+
             height: 35px;
+
             background: #8fd0fa;
         }}
 
+
         #aguja {{
             position: absolute;
+
             left: 38px;
+
             top: 124px;
+
             width: 4px;
-            height: 45px;
+
+            height: 46px;
+
             background: #999;
         }}
 
+
         #etiqueta {{
             position: absolute;
-            width: 300px;
-            left: calc(50% - 150px);
+
+            width: 360px;
+
+            left: calc(50% - 180px);
+
             top: 8px;
+
             text-align: center;
+
             font-weight: bold;
+
             font-size: 18px;
         }}
 
+
         #estado {{
             position: absolute;
+
             width: 100%;
-            bottom: 20px;
+
+            bottom: 18px;
+
             text-align: center;
+
             font-size: 18px;
+
             font-weight: bold;
+        }}
+
+
+        #leyenda-blindaje {{
+            position: absolute;
+
+            left: 86px;
+
+            top: 335px;
+
+            width: 280px;
+
+            text-align: center;
+
+            font-size: 13px;
+
+            color: #333;
         }}
 
         </style>
 
         </head>
 
+
         <body>
+
 
         <div id="lab">
 
+
             <div id="etiqueta">
-                Jeringa con {isotopo_real} — {actividad} MBq
+
+                Jeringa con {isotopo_real}
+                —
+                {actividad} MBq
+
             </div>
+
 
             <div id="jeringa">
 
@@ -516,140 +776,303 @@ with tab2:
 
             <div id="equipo">
 
+
+                <div id="blindaje1"></div>
+
+
+                <div id="blindaje2"></div>
+
+
                 <div id="pozo"></div>
+
 
                 <div id="boca"></div>
 
+
                 <div id="entrada"></div>
+
 
                 <div id="panel">
 
+
                     <div id="pantalla">
 
-                        <div id="lectura">
-                            0.0
+
+                        <div id="lecturaMBq">
+
+                            0.00 MBq
+
                         </div>
 
-                        <div id="unidad">
-                            MBq
+
+                        <div id="lecturamCi">
+
+                            0.000 mCi
+
                         </div>
+
 
                     </div>
+
 
                     <div id="iso">
+
                         {isotopo_equipo}
+
                     </div>
 
-                    <div class="boton" id="b1"></div>
 
-                    <div class="boton" id="b2"></div>
+                    <div
+                    class="boton"
+                    id="b1"
+                    ></div>
 
-                    <div class="boton" id="b3"></div>
+
+                    <div
+                    class="boton"
+                    id="b2"
+                    ></div>
+
+
+                    <div
+                    class="boton"
+                    id="b3"
+                    ></div>
+
 
                 </div>
 
+
+                <div id="leyenda-blindaje">
+
+                    Blindaje representado
+                    de forma esquemática
+
+                </div>
+
+
             </div>
 
+
             <div id="estado">
+
                 🖱️ Arrastrá la jeringa hacia el pozo
+
             </div>
+
 
         </div>
 
 
         <script>
 
-        const syringe = document.getElementById("jeringa");
 
-        const well = document.getElementById("entrada");
+        const syringe =
+            document.getElementById("jeringa");
 
-        const reading = document.getElementById("lectura");
 
-        const status = document.getElementById("estado");
+        const well =
+            document.getElementById("entrada");
+
+
+        const readingMBq =
+            document.getElementById("lecturaMBq");
+
+
+        const readingMCi =
+            document.getElementById("lecturamCi");
+
+
+        const status =
+            document.getElementById("estado");
+
 
         let dragging = false;
 
+
         let offsetX = 0;
+
 
         let offsetY = 0;
 
 
         function updateReading() {{
 
-            const s = syringe.getBoundingClientRect();
 
-            const w = well.getBoundingClientRect();
+            const s =
+                syringe.getBoundingClientRect();
 
-            const sx = s.left + s.width/2;
 
-            const sy = s.top + s.height*0.75;
+            const w =
+                well.getBoundingClientRect();
 
-            const wx = w.left + w.width/2;
 
-            const wy = w.top + w.height/2;
+            const sx =
+                s.left
+                +
+                s.width/2;
 
-            const dx = sx - wx;
 
-            const dy = sy - wy;
+            const sy =
+                s.top
+                +
+                s.height*0.76;
 
-            const distance = Math.sqrt(
-                dx*dx +
-                dy*dy
-            );
+
+            const wx =
+                w.left
+                +
+                w.width/2;
+
+
+            const wy =
+                w.top
+                +
+                w.height/2;
+
+
+            const dx =
+                sx - wx;
+
+
+            const dy =
+                sy - wy;
+
+
+            const distance =
+                Math.sqrt(
+                    dx*dx
+                    +
+                    dy*dy
+                );
+
 
             let geometry = 0;
 
+
             if (distance < 45) {{
+
+
                 geometry = 1.0;
-                status.innerHTML = "✅ Jeringa correctamente posicionada dentro del pozo";
+
+
+                status.innerHTML =
+                    "✅ Jeringa correctamente posicionada dentro del pozo";
+
+
             }}
 
-            else if (distance < 100) {{
-                geometry = 0.65;
-                status.innerHTML = "⚠️ Jeringa parcialmente introducida";
+
+            else if (distance < 95) {{
+
+
+                geometry = 0.35;
+
+
+                status.innerHTML =
+                    "⚠️ Jeringa parcialmente introducida";
+
+
             }}
 
-            else if (distance < 170) {{
-                geometry = 0.20;
-                status.innerHTML = "↘️ Acercando la jeringa al detector";
+
+            else if (distance < 165) {{
+
+
+                geometry = 0.03;
+
+
+                status.innerHTML =
+                    "↘️ La jeringa está cerca del activímetro";
+
+
             }}
+
 
             else {{
-                geometry = 0.01;
-                status.innerHTML = "🖱️ Arrastrá la jeringa hacia el pozo";
+
+
+                geometry = 0.001;
+
+
+                status.innerHTML =
+                    "🖱️ Jeringa fuera del pozo — lectura cercana al fondo";
+
+
             }}
 
-            const activity = {actividad};
 
-            const calibration = {factor_cal};
+            const activity =
+                {actividad};
 
-            const value =
-                activity *
-                geometry *
+
+            const calibration =
+                {factor_cal};
+
+
+            const background =
+                {fondo_activimetro};
+
+
+            const contribution =
+                activity
+                *
+                geometry
+                *
                 calibration;
 
-            reading.innerHTML =
-                value.toFixed(1);
+
+            const valueMBq =
+                background
+                +
+                contribution;
+
+
+            const valueMCi =
+                valueMBq
+                /
+                37.0;
+
+
+            readingMBq.innerHTML =
+                valueMBq.toFixed(2)
+                +
+                " MBq";
+
+
+            readingMCi.innerHTML =
+                valueMCi.toFixed(3)
+                +
+                " mCi";
+
 
         }}
 
 
         syringe.addEventListener(
             "mousedown",
+
             function(e) {{
 
+
                 dragging = true;
+
 
                 const r =
                     syringe.getBoundingClientRect();
 
+
                 offsetX =
-                    e.clientX -
+                    e.clientX
+                    -
                     r.left;
 
+
                 offsetY =
-                    e.clientY -
+                    e.clientY
+                    -
                     r.top;
+
 
             }}
         );
@@ -657,53 +1080,70 @@ with tab2:
 
         document.addEventListener(
             "mousemove",
+
             function(e) {{
+
 
                 if (!dragging)
                     return;
+
 
                 const lab =
                     document
                     .getElementById("lab")
                     .getBoundingClientRect();
 
+
                 let x =
-                    e.clientX -
-                    lab.left -
+                    e.clientX
+                    -
+                    lab.left
+                    -
                     offsetX;
 
+
                 let y =
-                    e.clientY -
-                    lab.top -
+                    e.clientY
+                    -
+                    lab.top
+                    -
                     offsetY;
+
 
                 x =
                     Math.max(
                         0,
                         Math.min(
-                            lab.width -
+                            lab.width
+                            -
                             syringe.offsetWidth,
                             x
                         )
                     );
 
+
                 y =
                     Math.max(
                         0,
                         Math.min(
-                            lab.height -
+                            lab.height
+                            -
                             syringe.offsetHeight,
                             y
                         )
                     );
 
+
                 syringe.style.left =
                     x + "px";
+
 
                 syringe.style.top =
                     y + "px";
 
+
                 updateReading();
+
 
             }}
         );
@@ -711,9 +1151,12 @@ with tab2:
 
         document.addEventListener(
             "mouseup",
+
             function() {{
 
+
                 dragging = false;
+
 
             }}
         );
@@ -721,22 +1164,25 @@ with tab2:
 
         updateReading();
 
+
         </script>
+
 
         </body>
 
         </html>
+
         """
 
         st.components.v1.html(
             html_activimetro,
-            height=730,
+            height=790,
             scrolling=False
         )
 
 
 # =========================================================
-# 3. GEIGER
+# 3. GEIGER-MÜLLER ARRASTRABLE
 # =========================================================
 
 with tab3:
@@ -747,333 +1193,1090 @@ with tab3:
 
     st.write(
         """
-        Mové el detector con respecto al derrame
-        y observá cómo cambia la tasa de conteo y la lectura equivalente simulada.
+        Arrastrá el detector con el mouse.
+
+        Al soltarlo, se ubicará automáticamente
+        en una de las posiciones disponibles:
+
+        **0 m · 0,5 m · 1 m · 1,5 m · 2 m**
         """
     )
 
-    izquierda, derecha = st.columns(
-        [1.25, 0.75]
+    col1, col2 = st.columns(
+        [1.45, 0.55]
     )
 
-    with derecha:
-
-        distancia = st.slider(
-            "Distancia al derrame (m)",
-            min_value=0.5,
-            max_value=2.0,
-            value=1.0,
-            step=0.1
-        )
+    with col2:
 
         intensidad = st.slider(
             "Intensidad relativa del derrame",
             min_value=1,
             max_value=10,
-            value=5
+            value=5,
+            key="intensidad_geiger_u7"
         )
 
-        fondo = st.number_input(
-            "Fondo (cps)",
+        fondo_geiger = st.number_input(
+            "Fondo simulado (cps)",
             min_value=0.0,
             max_value=500.0,
             value=35.0,
-            step=1.0
-        )
-
-        esperado = (
-            100
-            * intensidad
-            / distancia**2
-            + fondo
-        )
-
-        if st.button("📟 Tomar una medición"):
-
-            st.session_state["medicion"] = (
-                st.session_state.get(
-                    "medicion",
-                    0
-                )
-                + 1
-            )
-
-        semilla = (
-            st.session_state.get(
-                "medicion",
-                0
-            )
-            + int(
-                distancia * 1000
-            )
-            + intensidad * 77
-        )
-
-        rng = np.random.default_rng(
-            semilla
-        )
-
-        cuentas = int(
-            rng.poisson(
-                esperado
-            )
-        )
-
-        # Conversión únicamente educativa.
-        factor_simulado = 0.002
-
-        tasa_dosis = (
-            cuentas
-            * factor_simulado
-        )
-
-        st.metric(
-            "Tasa de conteo",
-            f"{cuentas} cps"
-        )
-
-        st.metric(
-            "Lectura equivalente simulada",
-            f"{tasa_dosis:.2f} µSv/h"
+            step=1.0,
+            key="fondo_geiger_u7"
         )
 
         st.info(
             """
-            La relación entre cps y µSv/h que aparece acá
-            es solamente didáctica.
+            La lectura en µSv/h se incluye únicamente
+            como representación didáctica.
 
-            En un equipo real depende de la respuesta energética
-            y de la calibración del instrumento.
+            No constituye un factor de conversión
+            real de un instrumento.
             """
         )
 
 
-    with izquierda:
+    with col1:
 
-        posicion_detector = (
-            160
-            + (distancia - 0.5)
-            / 1.5
-            * 455
-        )
+        html_geiger = f"""
 
-        svg = f"""
+        <!DOCTYPE html>
 
-        <svg
-        viewBox="0 0 760 560"
-        width="100%"
-        >
+        <html>
 
-        <defs>
+        <head>
 
-        <radialGradient
-        id="derrame"
-        >
-
-        <stop
-        offset="0%"
-        stop-color="#d56b6b"
-        stop-opacity=".9"
-        />
-
-        <stop
-        offset="100%"
-        stop-color="#8b1e1e"
-        stop-opacity=".15"
-        />
-
-        </radialGradient>
-
-        </defs>
+        <meta charset="UTF-8">
 
 
-        <rect
-        x="25"
-        y="60"
-        width="710"
-        height="430"
-        rx="18"
-        fill="#eeeae2"
-        stroke="#c9c4bb"
-        />
+        <style>
 
 
-        <ellipse
-        cx="115"
-        cy="295"
-        rx="{40 + intensidad*3}"
-        ry="{28 + intensidad*2}"
-        fill="url(#derrame)"
-        />
+        body {{
+            margin: 0;
+
+            background: transparent;
+
+            font-family: Arial, sans-serif;
+
+            overflow: hidden;
+        }}
 
 
-        <text
-        x="115"
-        y="365"
-        text-anchor="middle"
-        font-size="18"
-        font-weight="600"
-        >
+        #scene {{
+            position: relative;
 
-        Derrame F-18
+            width: 100%;
 
-        </text>
+            height: 720px;
 
+            background: #efebe3;
 
-        <line
-        x1="115"
-        y1="120"
-        x2="655"
-        y2="120"
-        stroke="#888"
-        stroke-dasharray="6 6"
-        />
+            border: 2px solid #c9c4bb;
+
+            border-radius: 26px;
+
+            box-sizing: border-box;
+
+            overflow: hidden;
+        }}
 
 
-        <text
-        x="255"
-        y="102"
-        text-anchor="middle"
-        font-size="16"
-        >
-        0,5 m
-        </text>
+        #guide {{
+            position: absolute;
+
+            left: 120px;
+
+            right: 55px;
+
+            top: 145px;
+
+            border-top:
+                2px dashed #999;
+        }}
 
 
-        <text
-        x="390"
-        y="102"
-        text-anchor="middle"
-        font-size="16"
-        >
-        1 m
-        </text>
+        .mark {{
+            position: absolute;
+
+            top: 104px;
+
+            transform:
+                translateX(-50%);
+
+            text-align: center;
+
+            font-size: 18px;
+
+            font-weight: bold;
+
+            color: #222;
+        }}
 
 
-        <text
-        x="655"
-        y="102"
-        text-anchor="middle"
-        font-size="16"
-        >
-        2 m
-        </text>
+        .tick {{
+            position: absolute;
+
+            top: 137px;
+
+            width: 2px;
+
+            height: 18px;
+
+            background: #888;
+
+            transform:
+                translateX(-50%);
+        }}
 
 
-        <g
-        transform="translate({posicion_detector},250)"
-        >
+        #spill {{
+            position: absolute;
 
-        <rect
-        x="-72"
-        y="-52"
-        width="145"
-        height="105"
-        rx="18"
-        fill="#343434"
-        stroke="#111"
-        stroke-width="3"
-        />
+            left: 65px;
 
+            top: 430px;
 
-        <rect
-        x="-55"
-        y="-38"
-        width="110"
-        height="58"
-        rx="7"
-        fill="#cce6c4"
-        stroke="#111"
-        />
+            width: {95 + intensidad*5}px;
+
+            height: {70 + intensidad*4}px;
+
+            border-radius: 50%;
+
+            background:
+                radial-gradient(
+                    circle,
+                    rgba(215,90,90,.88),
+                    rgba(145,35,35,.14)
+                );
+        }}
 
 
-        <text
-        x="0"
-        y="-14"
-        text-anchor="middle"
-        font-family="monospace"
-        font-size="18"
-        font-weight="600"
-        >
+        #spill-label {{
+            position: absolute;
 
-        {cuentas} cps
+            left: 48px;
 
-        </text>
+            top: 545px;
 
+            width: 190px;
 
-        <text
-        x="0"
-        y="10"
-        text-anchor="middle"
-        font-family="monospace"
-        font-size="16"
-        >
+            text-align: center;
 
-        {tasa_dosis:.2f} µSv/h
+            font-size: 18px;
 
-        </text>
+            font-weight: bold;
+
+            color: #222;
+        }}
 
 
-        <rect
-        x="73"
-        y="-16"
-        width="105"
-        height="32"
-        rx="14"
-        fill="#4b4b4b"
-        stroke="#111"
-        stroke-width="2"
-        />
+        #meter {{
+            position: absolute;
+
+            left: 120px;
+
+            top: 305px;
+
+            width: 215px;
+
+            height: 175px;
+
+            cursor: grab;
+
+            user-select: none;
+
+            z-index: 20;
+        }}
 
 
-        <text
-        x="0"
-        y="82"
-        text-anchor="middle"
-        font-size="17"
-        font-weight="600"
-        >
-
-        Geiger-Müller
-
-        </text>
-
-        </g>
+        #meter:active {{
+            cursor: grabbing;
+        }}
 
 
-        <line
-        x1="115"
-        y1="425"
-        x2="{posicion_detector}"
-        y2="425"
-        stroke="#333"
-        stroke-width="3"
-        />
+        #body {{
+            position: absolute;
+
+            left: 0;
+
+            top: 0;
+
+            width: 150px;
+
+            height: 130px;
+
+            border-radius: 24px;
+
+            background: #343434;
+
+            border: 4px solid #111;
+
+            box-sizing: border-box;
+        }}
 
 
-        <text
-        x="{(115 + posicion_detector)/2}"
-        y="458"
-        text-anchor="middle"
-        font-size="19"
-        >
+        #screen {{
+            position: absolute;
 
-        {distancia:.1f} m
+            left: 18px;
 
-        </text>
+            top: 20px;
 
-        </svg>
+            width: 114px;
+
+            height: 72px;
+
+            border-radius: 9px;
+
+            background: #cce8c5;
+
+            border: 2px solid #111;
+
+            text-align: center;
+
+            font-family: monospace;
+
+            color: #111;
+        }}
+
+
+        #cps {{
+            margin-top: 11px;
+
+            font-size: 21px;
+
+            font-weight: bold;
+        }}
+
+
+        #dose {{
+            margin-top: 6px;
+
+            font-size: 17px;
+        }}
+
+
+        #probe {{
+            position: absolute;
+
+            left: 146px;
+
+            top: 47px;
+
+            width: 68px;
+
+            height: 34px;
+
+            border-radius:
+                0 17px 17px 0;
+
+            background: #505050;
+
+            border: 3px solid #111;
+
+            box-sizing: border-box;
+        }}
+
+
+        #name {{
+            position: absolute;
+
+            left: -10px;
+
+            top: 140px;
+
+            width: 225px;
+
+            text-align: center;
+
+            font-size: 18px;
+
+            font-weight: bold;
+
+            color: #222;
+        }}
+
+
+        #distance-box {{
+            position: absolute;
+
+            left: 50%;
+
+            transform:
+                translateX(-50%);
+
+            bottom: 34px;
+
+            padding:
+                9px 18px;
+
+            border-radius: 10px;
+
+            background:
+                rgba(255,255,255,.75);
+
+            font-size: 18px;
+
+            font-weight: bold;
+
+            color: #222;
+        }}
+
+
+        #hint {{
+            position: absolute;
+
+            left: 50%;
+
+            transform:
+                translateX(-50%);
+
+            bottom: 78px;
+
+            font-size: 16px;
+
+            color: #444;
+        }}
+
+
+        #new-measurement {{
+            position: absolute;
+
+            right: 30px;
+
+            bottom: 30px;
+
+            padding:
+                10px 14px;
+
+            border-radius: 10px;
+
+            border:
+                1px solid #777;
+
+            background: #f7f7f7;
+
+            cursor: pointer;
+
+            font-size: 14px;
+        }}
+
+
+        </style>
+
+
+        </head>
+
+
+        <body>
+
+
+        <div id="scene">
+
+
+            <div id="guide"></div>
+
+
+            <div
+            class="mark"
+            id="m0"
+            >
+            0 m
+            </div>
+
+
+            <div
+            class="mark"
+            id="m05"
+            >
+            0,5 m
+            </div>
+
+
+            <div
+            class="mark"
+            id="m10"
+            >
+            1 m
+            </div>
+
+
+            <div
+            class="mark"
+            id="m15"
+            >
+            1,5 m
+            </div>
+
+
+            <div
+            class="mark"
+            id="m20"
+            >
+            2 m
+            </div>
+
+
+            <div
+            class="tick"
+            id="t0"
+            ></div>
+
+
+            <div
+            class="tick"
+            id="t05"
+            ></div>
+
+
+            <div
+            class="tick"
+            id="t10"
+            ></div>
+
+
+            <div
+            class="tick"
+            id="t15"
+            ></div>
+
+
+            <div
+            class="tick"
+            id="t20"
+            ></div>
+
+
+            <div id="spill"></div>
+
+
+            <div id="spill-label">
+
+                Derrame simulado de F-18
+
+            </div>
+
+
+            <div id="meter">
+
+
+                <div id="body">
+
+
+                    <div id="screen">
+
+
+                        <div id="cps">
+
+                            -- cps
+
+                        </div>
+
+
+                        <div id="dose">
+
+                            -- µSv/h
+
+                        </div>
+
+
+                    </div>
+
+
+                </div>
+
+
+                <div id="probe"></div>
+
+
+                <div id="name">
+
+                    Geiger-Müller
+
+                </div>
+
+
+            </div>
+
+
+            <div id="hint">
+
+                🖱️ Arrastrá el detector
+                y soltalo sobre una posición
+
+            </div>
+
+
+            <div id="distance-box">
+
+                Distancia:
+
+                <span id="distance-text">
+
+                    0 m
+
+                </span>
+
+            </div>
+
+
+            <button id="new-measurement">
+
+                📟 Nueva medición
+
+            </button>
+
+
+        </div>
+
+
+        <script>
+
+
+        const scene =
+            document.getElementById("scene");
+
+
+        const meter =
+            document.getElementById("meter");
+
+
+        const cpsText =
+            document.getElementById("cps");
+
+
+        const doseText =
+            document.getElementById("dose");
+
+
+        const distanceText =
+            document.getElementById("distance-text");
+
+
+        const newMeasurement =
+            document.getElementById("new-measurement");
+
+
+        const intensity =
+            {intensidad};
+
+
+        const background =
+            {float(fondo_geiger)};
+
+
+        let dragging = false;
+
+
+        let offsetX = 0;
+
+
+        let currentIndex = 0;
+
+
+        const distances = [
+
+            0.0,
+
+            0.5,
+
+            1.0,
+
+            1.5,
+
+            2.0
+
+        ];
+
+
+        function getPositions() {{
+
+
+            const width =
+                scene.clientWidth;
+
+
+            const start =
+                110;
+
+
+            const end =
+                width - 250;
+
+
+            const step =
+                (end - start)
+                /
+                4;
+
+
+            return [
+
+                start,
+
+                start + step,
+
+                start + 2*step,
+
+                start + 3*step,
+
+                end
+
+            ];
+
+
+        }}
+
+
+        function positionMarks() {{
+
+
+            const positions =
+                getPositions();
+
+
+            const ids = [
+
+                "0",
+
+                "05",
+
+                "10",
+
+                "15",
+
+                "20"
+
+            ];
+
+
+            positions.forEach(
+
+                (x, i) => {{
+
+
+                    document
+                    .getElementById(
+                        "m" + ids[i]
+                    )
+                    .style.left =
+                        (x + 75)
+                        +
+                        "px";
+
+
+                    document
+                    .getElementById(
+                        "t" + ids[i]
+                    )
+                    .style.left =
+                        (x + 75)
+                        +
+                        "px";
+
+
+                }}
+
+            );
+
+
+        }}
+
+
+        function normalRandom() {{
+
+
+            let u = 0;
+
+
+            let v = 0;
+
+
+            while (u === 0)
+                u = Math.random();
+
+
+            while (v === 0)
+                v = Math.random();
+
+
+            return (
+                Math.sqrt(
+                    -2.0
+                    *
+                    Math.log(u)
+                )
+                *
+                Math.cos(
+                    2.0
+                    *
+                    Math.PI
+                    *
+                    v
+                )
+            );
+
+
+        }}
+
+
+        function calculateReading() {{
+
+
+            const d =
+                distances[currentIndex];
+
+
+            const effectiveDistance =
+                (
+                    d === 0.0
+                )
+                ?
+                0.25
+                :
+                d;
+
+
+            const signal =
+                (
+                    70
+                    *
+                    intensity
+                )
+                /
+                (
+                    effectiveDistance
+                    *
+                    effectiveDistance
+                );
+
+
+            const expected =
+                signal
+                +
+                background;
+
+
+            const fluctuation =
+                normalRandom()
+                *
+                Math.sqrt(
+                    Math.max(
+                        expected,
+                        1
+                    )
+                );
+
+
+            const cps =
+                Math.max(
+                    0,
+                    Math.round(
+                        expected
+                        +
+                        fluctuation
+                    )
+                );
+
+
+            /*
+            Conversión exclusivamente didáctica.
+            No corresponde a un factor real
+            de calibración.
+            */
+
+            const dose =
+                cps
+                *
+                0.002;
+
+
+            cpsText.innerHTML =
+                cps
+                +
+                " cps";
+
+
+            doseText.innerHTML =
+                dose.toFixed(2)
+                +
+                " µSv/h";
+
+
+            if (d === 0.0) {{
+
+
+                distanceText.innerHTML =
+                    "0 m";
+
+
+            }}
+
+            else {{
+
+
+                distanceText.innerHTML =
+                    d
+                    .toFixed(1)
+                    .replace(
+                        ".",
+                        ","
+                    )
+                    +
+                    " m";
+
+
+            }}
+
+
+        }}
+
+
+        function snapTo(index) {{
+
+
+            const positions =
+                getPositions();
+
+
+            currentIndex =
+                Math.max(
+                    0,
+                    Math.min(
+                        4,
+                        index
+                    )
+                );
+
+
+            meter.style.left =
+                positions[currentIndex]
+                +
+                "px";
+
+
+            calculateReading();
+
+
+        }}
+
+
+        meter.addEventListener(
+            "mousedown",
+
+            function(e) {{
+
+
+                dragging = true;
+
+
+                const r =
+                    meter
+                    .getBoundingClientRect();
+
+
+                offsetX =
+                    e.clientX
+                    -
+                    r.left;
+
+
+            }}
+        );
+
+
+        document.addEventListener(
+            "mousemove",
+
+            function(e) {{
+
+
+                if (!dragging)
+                    return;
+
+
+                const rect =
+                    scene
+                    .getBoundingClientRect();
+
+
+                let x =
+                    e.clientX
+                    -
+                    rect.left
+                    -
+                    offsetX;
+
+
+                const positions =
+                    getPositions();
+
+
+                const minX =
+                    positions[0];
+
+
+                const maxX =
+                    positions[4];
+
+
+                x =
+                    Math.max(
+                        minX,
+                        Math.min(
+                            maxX,
+                            x
+                        )
+                    );
+
+
+                meter.style.left =
+                    x
+                    +
+                    "px";
+
+
+            }}
+        );
+
+
+        document.addEventListener(
+            "mouseup",
+
+            function() {{
+
+
+                if (!dragging)
+                    return;
+
+
+                dragging = false;
+
+
+                const currentX =
+                    parseFloat(
+                        meter.style.left
+                        ||
+                        "0"
+                    );
+
+
+                const positions =
+                    getPositions();
+
+
+                let closest = 0;
+
+
+                let best =
+                    Infinity;
+
+
+                positions.forEach(
+
+                    (x, i) => {{
+
+
+                        const difference =
+                            Math.abs(
+                                currentX
+                                -
+                                x
+                            );
+
+
+                        if (
+                            difference
+                            <
+                            best
+                        ) {{
+
+
+                            best =
+                                difference;
+
+
+                            closest =
+                                i;
+
+
+                        }}
+
+
+                    }}
+
+                );
+
+
+                snapTo(
+                    closest
+                );
+
+
+            }}
+        );
+
+
+        newMeasurement.addEventListener(
+            "click",
+
+            function() {{
+
+
+                calculateReading();
+
+
+            }}
+        );
+
+
+        window.addEventListener(
+            "resize",
+
+            function() {{
+
+
+                positionMarks();
+
+
+                snapTo(
+                    currentIndex
+                );
+
+
+            }}
+        );
+
+
+        positionMarks();
+
+
+        snapTo(0);
+
+
+        </script>
+
+
+        </body>
+
+        </html>
 
         """
 
         st.components.v1.html(
-            svg,
-            height=650,
+            html_geiger,
+            height=760,
             scrolling=False
         )
 
+
     st.caption(
         """
-        El comportamiento mostrado es un modelo educativo simplificado.
+        El comportamiento del Geiger y la lectura equivalente
+        se representan mediante un modelo educativo simplificado.
+
+        Las magnitudes mostradas no deben interpretarse
+        como factores de calibración de un instrumento real.
         """
     )
