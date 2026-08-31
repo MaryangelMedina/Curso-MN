@@ -5,7 +5,7 @@ import plotly.graph_objects as go
 st.set_page_config(
     page_title="Unidad 8 - Dosimetría personal",
     page_icon="☢️",
-    layout="wide"
+    layout="wide",
 )
 
 st.title("☢️ Unidad 8 — Instrumentación para dosimetría personal")
@@ -28,18 +28,16 @@ tab1, tab2, tab3, tab4 = st.tabs(
         "👤 ¿Dónde llevo mi dosímetro?",
         "💎 TLD interactivo",
         "🔬 Comparador de dosímetros",
-        "📐 Calibración"
+        "📐 Calibración",
     ]
 )
 
 
 # ============================================================
-# TAB 1
-# UBICACIÓN DE LOS DOSÍMETROS
+# TAB 1 — UBICACIÓN DE LOS DOSÍMETROS
 # ============================================================
 
 with tab1:
-
     st.header("👤 ¿Dónde llevo mi dosímetro?")
 
     st.write(
@@ -51,1051 +49,579 @@ with tab1:
         """
     )
 
-    html = """
-
+    html = r"""
     <!DOCTYPE html>
-
     <html>
-
     <head>
-
     <meta charset="UTF-8">
 
     <style>
 
-    body {
-        margin: 0;
-        background: transparent;
-        font-family: Arial, sans-serif;
-        overflow: hidden;
-        color: white;
+    body{
+        margin:0;
+        background:transparent;
+        font-family:Arial,sans-serif;
+        overflow:hidden;
+        color:white;
     }
 
-    #laboratorio {
-
-        position: relative;
-
-        width: 100%;
-
-        height: 820px;
-
-        background:
-            linear-gradient(
-                135deg,
-                #111923,
-                #0d1117
-            );
-
-        border-radius: 26px;
-
-        border: 1px solid #35404d;
-
-        overflow: hidden;
+    #laboratorio{
+        position:relative;
+        width:100%;
+        height:820px;
+        background:linear-gradient(135deg,#111923,#0d1117);
+        border-radius:26px;
+        border:1px solid #35404d;
+        overflow:hidden;
     }
 
-
-    #titulo {
-
-        position: absolute;
-
-        top: 20px;
-
-        width: 100%;
-
-        text-align: center;
-
-        font-size: 25px;
-
-        font-weight: bold;
-
-        color: white;
+    #titulo{
+        position:absolute;
+        top:20px;
+        width:100%;
+        text-align:center;
+        font-size:25px;
+        font-weight:bold;
+        color:white;
     }
 
-
-    #instruccion {
-
-        position: absolute;
-
-        top: 62px;
-
-        width: 100%;
-
-        text-align: center;
-
-        font-size: 16px;
-
-        color: #cbd5df;
+    #instruccion{
+        position:absolute;
+        top:62px;
+        width:100%;
+        text-align:center;
+        font-size:16px;
+        color:#cbd5df;
     }
 
-
-    /* ===========================================
-       PERSONA
-       =========================================== */
-
-    #persona {
-
-        position: absolute;
-
-        left: 5%;
-
-        top: 112px;
-
-        width: 55%;
-
-        height: 610px;
+    #persona{
+        position:absolute;
+        left:5%;
+        top:112px;
+        width:55%;
+        height:610px;
     }
 
-
-    #cabeza {
-
-        position: absolute;
-
-        left: calc(50% - 62px);
-
-        top: 8px;
-
-        width: 124px;
-
-        height: 145px;
-
-        border-radius: 50% 50% 45% 45%;
-
-        background: #d6a47e;
-
-        border: 3px solid #9b7257;
+    #cabeza{
+        position:absolute;
+        left:calc(50% - 62px);
+        top:8px;
+        width:124px;
+        height:145px;
+        border-radius:50% 50% 45% 45%;
+        background:#d6a47e;
+        border:3px solid #9b7257;
     }
 
-
-    #cabello {
-
-        position: absolute;
-
-        left: -3px;
-
-        top: -4px;
-
-        width: 130px;
-
-        height: 52px;
-
-        border-radius: 65px 65px 25px 25px;
-
-        background: #3a2c27;
+    #cabello{
+        position:absolute;
+        left:-3px;
+        top:-4px;
+        width:130px;
+        height:52px;
+        border-radius:65px 65px 25px 25px;
+        background:#3a2c27;
     }
-
 
     #lente-izq,
-    #lente-der {
-
-        position: absolute;
-
-        top: 56px;
-
-        width: 42px;
-
-        height: 28px;
-
-        border: 4px solid #3e4850;
-
-        border-radius: 10px;
-
-        background:
-            rgba(190,225,240,.16);
+    #lente-der{
+        position:absolute;
+        top:56px;
+        width:42px;
+        height:28px;
+        border:4px solid #3e4850;
+        border-radius:10px;
+        background:rgba(190,225,240,.16);
     }
 
-
-    #lente-izq {
-        left: 13px;
+    #lente-izq{
+        left:13px;
     }
 
-
-    #lente-der {
-        right: 13px;
+    #lente-der{
+        right:13px;
     }
 
-
-    #puente {
-
-        position: absolute;
-
-        top: 68px;
-
-        left: 55px;
-
-        width: 14px;
-
-        height: 4px;
-
-        background: #3e4850;
+    #puente{
+        position:absolute;
+        top:68px;
+        left:55px;
+        width:14px;
+        height:4px;
+        background:#3e4850;
     }
 
-
-    #cuello {
-
-        position: absolute;
-
-        left: calc(50% - 29px);
-
-        top: 137px;
-
-        width: 58px;
-
-        height: 50px;
-
-        background: #c79270;
+    #cuello{
+        position:absolute;
+        left:calc(50% - 29px);
+        top:137px;
+        width:58px;
+        height:50px;
+        background:#c79270;
     }
 
-
-    #torso {
-
-        position: absolute;
-
-        left: calc(50% - 138px);
-
-        top: 177px;
-
-        width: 276px;
-
-        height: 350px;
-
-        border-radius: 42px 42px 20px 20px;
-
-        background:
-            linear-gradient(
-                90deg,
-                #dedede,
-                #fafafa,
-                #dedede
-            );
-
-        border: 3px solid #aaa;
+    #torso{
+        position:absolute;
+        left:calc(50% - 138px);
+        top:177px;
+        width:276px;
+        height:350px;
+        border-radius:42px 42px 20px 20px;
+        background:linear-gradient(90deg,#dedede,#fafafa,#dedede);
+        border:3px solid #aaa;
     }
 
-
-    #remera {
-
-        position: absolute;
-
-        left: calc(50% - 43px);
-
-        top: 181px;
-
-        width: 86px;
-
-        height: 93px;
-
-        background: #164d68;
-
-        clip-path:
-            polygon(
-                0 0,
-                100% 0,
-                70% 100%,
-                30% 100%
-            );
-
-        z-index: 2;
+    #remera{
+        position:absolute;
+        left:calc(50% - 43px);
+        top:181px;
+        width:86px;
+        height:93px;
+        background:#164d68;
+        clip-path:polygon(0 0,100% 0,70% 100%,30% 100%);
+        z-index:2;
     }
 
-
-    #solapa1 {
-
-        position: absolute;
-
-        left: calc(50% - 100px);
-
-        top: 181px;
-
-        width: 100px;
-
-        height: 100px;
-
-        background: white;
-
-        clip-path:
-            polygon(
-                0 0,
-                100% 0,
-                100% 100%
-            );
-
-        z-index: 3;
+    #solapa1{
+        position:absolute;
+        left:calc(50% - 100px);
+        top:181px;
+        width:100px;
+        height:100px;
+        background:white;
+        clip-path:polygon(0 0,100% 0,100% 100%);
+        z-index:3;
     }
 
-
-    #solapa2 {
-
-        position: absolute;
-
-        left: 50%;
-
-        top: 181px;
-
-        width: 100px;
-
-        height: 100px;
-
-        background: white;
-
-        clip-path:
-            polygon(
-                0 0,
-                100% 0,
-                0 100%
-            );
-
-        z-index: 3;
+    #solapa2{
+        position:absolute;
+        left:50%;
+        top:181px;
+        width:100px;
+        height:100px;
+        background:white;
+        clip-path:polygon(0 0,100% 0,0 100%);
+        z-index:3;
     }
-
 
     #brazo-izq,
-    #brazo-der {
-
-        position: absolute;
-
-        top: 205px;
-
-        width: 74px;
-
-        height: 326px;
-
-        background: #ececec;
-
-        border: 3px solid #aaa;
-
-        border-radius: 38px;
+    #brazo-der{
+        position:absolute;
+        top:205px;
+        width:74px;
+        height:326px;
+        background:#ececec;
+        border:3px solid #aaa;
+        border-radius:38px;
     }
 
-
-    #brazo-izq {
-
-        left: calc(50% - 203px);
-
-        transform: rotate(4deg);
+    #brazo-izq{
+        left:calc(50% - 203px);
+        transform:rotate(4deg);
     }
 
-
-    #brazo-der {
-
-        left: calc(50% + 129px);
-
-        transform: rotate(-4deg);
+    #brazo-der{
+        left:calc(50% + 129px);
+        transform:rotate(-4deg);
     }
-
 
     #mano-izq,
-    #mano-der {
-
-        position: absolute;
-
-        top: 500px;
-
-        width: 70px;
-
-        height: 94px;
-
-        border-radius: 30px 30px 38px 38px;
-
-        background: #d6a47e;
-
-        border: 3px solid #9b7257;
+    #mano-der{
+        position:absolute;
+        top:500px;
+        width:70px;
+        height:94px;
+        border-radius:30px 30px 38px 38px;
+        background:#d6a47e;
+        border:3px solid #9b7257;
     }
 
-
-    #mano-izq {
-
-        left: calc(50% - 201px);
+    #mano-izq{
+        left:calc(50% - 201px);
     }
 
-
-    #mano-der {
-
-        left: calc(50% + 131px);
+    #mano-der{
+        left:calc(50% + 131px);
     }
 
-
-    /* ===========================================
-       ZONAS DE DESTINO
-       =========================================== */
-
-    .zona {
-
-        position: absolute;
-
-        border: 3px dashed;
-
-        border-radius: 16px;
-
-        box-sizing: border-box;
-
-        display: flex;
-
-        align-items: center;
-
-        justify-content: center;
-
-        text-align: center;
-
-        font-size: 14px;
-
-        font-weight: bold;
-
-        z-index: 20;
+    .zona{
+        position:absolute;
+        border:3px dashed;
+        border-radius:16px;
+        box-sizing:border-box;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        text-align:center;
+        font-size:14px;
+        font-weight:bold;
+        z-index:20;
     }
 
-
-    #zona-ojos {
-
-        left: calc(50% + 65px);
-
-        top: 42px;
-
-        width: 110px;
-
-        height: 75px;
-
-        border-color: #f3a536;
-
-        color: #f3a536;
+    #zona-ojos{
+        left:calc(50% + 65px);
+        top:42px;
+        width:110px;
+        height:75px;
+        border-color:#f3a536;
+        color:#f3a536;
     }
 
-
-    #zona-pecho {
-
-        left: calc(50% - 65px);
-
-        top: 300px;
-
-        width: 130px;
-
-        height: 115px;
-
-        border-color: #4ca4ff;
-
-        color: #4ca4ff;
+    #zona-pecho{
+        left:calc(50% - 65px);
+        top:300px;
+        width:130px;
+        height:115px;
+        border-color:#4ca4ff;
+        color:#4ca4ff;
     }
 
-
-    #zona-mano {
-
-        left: calc(50% + 118px);
-
-        top: 485px;
-
-        width: 105px;
-
-        height: 120px;
-
-        border-color: #75c85d;
-
-        color: #75c85d;
+    #zona-mano{
+        left:calc(50% + 118px);
+        top:485px;
+        width:105px;
+        height:120px;
+        border-color:#75c85d;
+        color:#75c85d;
     }
 
-
-    /* ===========================================
-       PANEL
-       =========================================== */
-
-    #panel {
-
-        position: absolute;
-
-        right: 3%;
-
-        top: 120px;
-
-        width: 35%;
-
-        height: 560px;
-
-        border-radius: 22px;
-
-        background: #151e27;
-
-        border: 1px solid #3b4a59;
-
-        padding: 22px;
-
-        box-sizing: border-box;
+    #panel{
+        position:absolute;
+        right:3%;
+        top:120px;
+        width:35%;
+        height:560px;
+        border-radius:22px;
+        background:#151e27;
+        border:1px solid #3b4a59;
+        padding:22px;
+        box-sizing:border-box;
     }
 
-
-    #panel h2 {
-
-        margin: 0 0 7px 0;
-
-        text-align: center;
-
-        font-size: 22px;
+    #panel h2{
+        margin:0 0 7px 0;
+        text-align:center;
+        font-size:22px;
     }
 
-
-    #panel-sub {
-
-        text-align: center;
-
-        color: #aeb9c4;
-
-        margin-bottom: 20px;
+    #panel-sub{
+        text-align:center;
+        color:#aeb9c4;
+        margin-bottom:20px;
     }
 
-
-    .tarjeta {
-
-        position: relative;
-
-        height: 128px;
-
-        margin-bottom: 17px;
-
-        border-radius: 17px;
-
-        border: 1px solid #455567;
-
-        background: #101820;
-
-        padding-left: 120px;
-
-        padding-top: 22px;
-
-        padding-right: 10px;
-
-        box-sizing: border-box;
+    .tarjeta{
+        position:relative;
+        height:128px;
+        margin-bottom:17px;
+        border-radius:17px;
+        border:1px solid #455567;
+        background:#101820;
+        padding-left:120px;
+        padding-top:22px;
+        padding-right:10px;
+        box-sizing:border-box;
     }
 
-
-    .tarjeta-titulo {
-
-        font-size: 16px;
-
-        font-weight: bold;
-
-        margin-bottom: 8px;
+    .tarjeta-titulo{
+        font-size:16px;
+        font-weight:bold;
+        margin-bottom:8px;
     }
 
-
-    .descripcion {
-
-        font-size: 13px;
-
-        color: #c1c9d1;
-
-        line-height: 1.4;
+    .descripcion{
+        font-size:13px;
+        color:#c1c9d1;
+        line-height:1.4;
     }
 
-
-    /* ===========================================
-       DOSÍMETROS
-       =========================================== */
-
-    .dosimetro {
-
-        position: absolute;
-
-        cursor: grab;
-
-        z-index: 100;
-
-        user-select: none;
+    .dosimetro{
+        position:absolute;
+        cursor:grab;
+        z-index:100;
+        user-select:none;
     }
 
-
-    .dosimetro:active {
-        cursor: grabbing;
+    .dosimetro:active{
+        cursor:grabbing;
     }
 
-
-    /* Badge cuerpo entero */
-
-    #dos-cuerpo {
-
-        left: 27px;
-
-        top: 27px;
-
-        width: 62px;
-
-        height: 80px;
-
-        border-radius: 8px;
-
-        background:
-            linear-gradient(
-                #2585cf,
-                #146092
-            );
-
-        border: 3px solid #7abff2;
-
-        box-shadow:
-            0 6px 12px rgba(0,0,0,.35);
+    #dos-cuerpo{
+        left:27px;
+        top:27px;
+        width:62px;
+        height:80px;
+        border-radius:8px;
+        background:linear-gradient(#2585cf,#146092);
+        border:3px solid #7abff2;
+        box-shadow:0 6px 12px rgba(0,0,0,.35);
     }
 
-
-    #dos-cuerpo:before {
-
-        content: "";
-
-        position: absolute;
-
-        left: 18px;
-
-        top: -14px;
-
-        width: 25px;
-
-        height: 18px;
-
-        background: #aaa;
-
-        border-radius: 5px;
+    #dos-cuerpo:before{
+        content:"";
+        position:absolute;
+        left:18px;
+        top:-14px;
+        width:25px;
+        height:18px;
+        background:#aaa;
+        border-radius:5px;
     }
 
-
-    #dos-cuerpo:after {
-
-        content: "";
-
-        position: absolute;
-
-        left: 12px;
-
-        top: 20px;
-
-        width: 38px;
-
-        height: 43px;
-
-        border-radius: 4px;
-
-        background: #e8e8e8;
+    #dos-cuerpo:after{
+        content:"";
+        position:absolute;
+        left:12px;
+        top:20px;
+        width:38px;
+        height:43px;
+        border-radius:4px;
+        background:#e8e8e8;
     }
 
-
-    /* Anillo */
-
-    #dos-anillo {
-
-        left: 28px;
-
-        top: 31px;
-
-        width: 62px;
-
-        height: 62px;
-
-        border-radius: 50%;
-
-        border: 14px solid #78bd63;
-
-        box-sizing: border-box;
-
-        background: transparent;
-
-        box-shadow:
-            0 5px 10px rgba(0,0,0,.3);
+    #dos-anillo{
+        left:28px;
+        top:31px;
+        width:62px;
+        height:62px;
+        border-radius:50%;
+        border:14px solid #78bd63;
+        box-sizing:border-box;
+        background:transparent;
+        box-shadow:0 5px 10px rgba(0,0,0,.3);
     }
 
-
-    #dos-anillo:after {
-
-        content: "";
-
-        position: absolute;
-
-        top: -13px;
-
-        left: 8px;
-
-        width: 18px;
-
-        height: 14px;
-
-        border-radius: 4px;
-
-        background: #d8e8d2;
+    #dos-anillo:after{
+        content:"";
+        position:absolute;
+        top:-13px;
+        left:8px;
+        width:18px;
+        height:14px;
+        border-radius:4px;
+        background:#d8e8d2;
     }
 
-
-    /* Cristalino / gafas */
-
-    #dos-ojos {
-
-        left: 15px;
-
-        top: 38px;
-
-        width: 86px;
-
-        height: 43px;
+    #dos-ojos{
+        left:15px;
+        top:38px;
+        width:86px;
+        height:43px;
     }
 
-
-    #cristal-l {
-
-        position: absolute;
-
-        left: 0;
-
-        top: 5px;
-
-        width: 35px;
-
-        height: 24px;
-
-        border: 5px solid #d28c2c;
-
-        border-radius: 10px;
+    #cristal-l,
+    #cristal-r{
+        position:absolute;
+        top:5px;
+        width:35px;
+        height:24px;
+        border:5px solid #d28c2c;
+        border-radius:10px;
     }
 
-
-    #cristal-r {
-
-        position: absolute;
-
-        right: 0;
-
-        top: 5px;
-
-        width: 35px;
-
-        height: 24px;
-
-        border: 5px solid #d28c2c;
-
-        border-radius: 10px;
+    #cristal-l{
+        left:0;
     }
 
-
-    #cristal-puente {
-
-        position: absolute;
-
-        left: 35px;
-
-        top: 16px;
-
-        width: 16px;
-
-        height: 5px;
-
-        background: #d28c2c;
+    #cristal-r{
+        right:0;
     }
 
-
-    #sensor-ojo {
-
-        position: absolute;
-
-        right: 5px;
-
-        top: 0;
-
-        width: 18px;
-
-        height: 18px;
-
-        border-radius: 3px;
-
-        background: #444;
-
-        border: 2px solid #eee;
+    #cristal-puente{
+        position:absolute;
+        left:35px;
+        top:16px;
+        width:16px;
+        height:5px;
+        background:#d28c2c;
     }
 
-
-    /* ===========================================
-       MENSAJE
-       =========================================== */
-
-    #mensaje {
-
-        position: absolute;
-
-        bottom: 33px;
-
-        left: 5%;
-
-        width: 55%;
-
-        min-height: 62px;
-
-        border-radius: 14px;
-
-        border: 1px solid #3b4a59;
-
-        background: #121a22;
-
-        display: flex;
-
-        align-items: center;
-
-        justify-content: center;
-
-        text-align: center;
-
-        font-size: 17px;
-
-        color: white;
-
-        padding: 10px 18px;
-
-        box-sizing: border-box;
+    #sensor-ojo{
+        position:absolute;
+        right:5px;
+        top:0;
+        width:18px;
+        height:18px;
+        border-radius:3px;
+        background:#444;
+        border:2px solid #eee;
     }
 
-
-    #contador {
-
-        position: absolute;
-
-        right: 3%;
-
-        bottom: 46px;
-
-        width: 35%;
-
-        text-align: center;
-
-        color: #c3ccd5;
-
-        font-size: 17px;
+    #mensaje{
+        position:absolute;
+        bottom:33px;
+        left:5%;
+        width:55%;
+        min-height:62px;
+        border-radius:14px;
+        border:1px solid #3b4a59;
+        background:#121a22;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        text-align:center;
+        font-size:17px;
+        color:white;
+        padding:10px 18px;
+        box-sizing:border-box;
     }
 
-
-    .correcto {
-
-        box-shadow:
-            0 0 0 5px rgba(88,205,108,.30);
-
-        pointer-events: none;
+    #contador{
+        position:absolute;
+        right:3%;
+        bottom:46px;
+        width:35%;
+        text-align:center;
+        color:#c3ccd5;
+        font-size:17px;
     }
 
+    .correcto{
+        box-shadow:0 0 0 5px rgba(88,205,108,.30);
+        pointer-events:none;
+    }
 
     </style>
-
     </head>
-
 
     <body>
 
-
     <div id="laboratorio">
 
-
         <div id="titulo">
-
             Ubicación de los dosímetros personales
-
         </div>
-
 
         <div id="instruccion">
-
             Arrastrá cada dosímetro hasta la región correspondiente.
-
         </div>
-
 
         <div id="persona">
 
-
             <div id="cabeza">
-
                 <div id="cabello"></div>
-
                 <div id="lente-izq"></div>
-
                 <div id="lente-der"></div>
-
                 <div id="puente"></div>
-
             </div>
-
 
             <div id="cuello"></div>
-
             <div id="torso"></div>
-
             <div id="remera"></div>
-
             <div id="solapa1"></div>
-
             <div id="solapa2"></div>
-
             <div id="brazo-izq"></div>
-
             <div id="brazo-der"></div>
-
             <div id="mano-izq"></div>
-
             <div id="mano-der"></div>
 
-
-            <div
-            class="zona"
-            id="zona-ojos"
-            >
-
+            <div class="zona" id="zona-ojos">
                 CRISTALINO
-
             </div>
 
-
-            <div
-            class="zona"
-            id="zona-pecho"
-            >
-
+            <div class="zona" id="zona-pecho">
                 CUERPO<br>ENTERO
-
             </div>
 
-
-            <div
-            class="zona"
-            id="zona-mano"
-            >
-
+            <div class="zona" id="zona-mano">
                 EXTREMIDAD
-
             </div>
-
 
         </div>
 
-
         <div id="panel">
 
-
-            <h2>
-                Dosímetros disponibles
-            </h2>
-
+            <h2>Dosímetros disponibles</h2>
 
             <div id="panel-sub">
                 Arrastrá cada uno hacia el trabajador
             </div>
 
-
             <div class="tarjeta">
 
+                <div
+                    class="dosimetro"
+                    id="dos-cuerpo">
+                </div>
 
                 <div
-                class="dosimetro"
-                id="dos-cuerpo"
-                ></div>
-
-
-                <div
-                class="tarjeta-titulo"
-                style="color:#56aaff;"
-                >
+                    class="tarjeta-titulo"
+                    style="color:#56aaff;">
                     DOSÍMETRO DE CUERPO ENTERO
                 </div>
 
-
                 <div class="descripcion">
-                    Registra la exposición personal acumulada
-                    durante el período de utilización.
+                    Registra la exposición personal acumulada durante el período de utilización.
                 </div>
-
 
             </div>
 
-
             <div class="tarjeta">
 
+                <div
+                    class="dosimetro"
+                    id="dos-anillo">
+                </div>
 
                 <div
-                class="dosimetro"
-                id="dos-anillo"
-                ></div>
-
-
-                <div
-                class="tarjeta-titulo"
-                style="color:#84ce6b;"
-                >
+                    class="tarjeta-titulo"
+                    style="color:#84ce6b;">
                     DOSÍMETRO DE EXTREMIDAD
                 </div>
 
-
                 <div class="descripcion">
-                    Evalúa la exposición localizada
-                    de manos y dedos.
+                    Evalúa la exposición localizada de manos y dedos.
                 </div>
-
 
             </div>
 
-
             <div class="tarjeta">
 
-
                 <div
-                class="dosimetro"
-                id="dos-ojos"
-                >
+                    class="dosimetro"
+                    id="dos-ojos">
 
                     <div id="cristal-l"></div>
-
                     <div id="cristal-r"></div>
-
                     <div id="cristal-puente"></div>
-
                     <div id="sensor-ojo"></div>
 
                 </div>
 
-
                 <div
-                class="tarjeta-titulo"
-                style="color:#e5a342;"
-                >
+                    class="tarjeta-titulo"
+                    style="color:#e5a342;">
                     DOSÍMETRO DE CRISTALINO
                 </div>
 
-
                 <div class="descripcion">
-                    Evalúa la exposición localizada
-                    en la región ocular.
+                    Evalúa la exposición localizada en la región ocular.
                 </div>
-
 
             </div>
 
-
         </div>
-
 
         <div id="mensaje">
-
             🖱️ Arrastrá uno de los dosímetros para comenzar.
-
         </div>
 
-
         <div id="contador">
-
             Ubicaciones correctas:
             <span id="numero">0</span>
             / 3
-
         </div>
-
 
     </div>
 
 
     <script>
 
-
     const lab =
         document.getElementById("laboratorio");
 
-
     const mensaje =
         document.getElementById("mensaje");
-
 
     const numero =
         document.getElementById("numero");
@@ -1114,7 +640,6 @@ with tab1:
 
     const configuracion = {
 
-
         "dos-cuerpo": {
 
             zona: "zona-pecho",
@@ -1124,7 +649,6 @@ with tab1:
 
         },
 
-
         "dos-anillo": {
 
             zona: "zona-mano",
@@ -1133,7 +657,6 @@ with tab1:
                 "✅ Correcto. El dosímetro de extremidad quedó ubicado sobre la mano."
 
         },
-
 
         "dos-ojos": {
 
@@ -1149,22 +672,20 @@ with tab1:
 
     function centro(elemento) {
 
-
         const r =
             elemento.getBoundingClientRect();
-
 
         return {
 
             x:
                 r.left
                 +
-                r.width/2,
+                r.width / 2,
 
             y:
                 r.top
                 +
-                r.height/2
+                r.height / 2
 
         };
 
@@ -1173,14 +694,11 @@ with tab1:
 
     function dentro(elemento, zona) {
 
-
         const e =
             centro(elemento);
 
-
         const z =
             zona.getBoundingClientRect();
-
 
         return (
 
@@ -1205,10 +723,8 @@ with tab1:
 
     function activarArrastre(id) {
 
-
         const item =
             document.getElementById(id);
-
 
         let dragging = false;
 
@@ -1223,33 +739,26 @@ with tab1:
 
             function(e) {
 
-
                 if (colocados[id])
                     return;
 
-
                 dragging = true;
-
 
                 const r =
                     item.getBoundingClientRect();
 
-
                 const lr =
                     lab.getBoundingClientRect();
-
 
                 offsetX =
                     e.clientX
                     -
                     r.left;
 
-
                 offsetY =
                     e.clientY
                     -
                     r.top;
-
 
                 item.style.left =
                     (
@@ -1260,7 +769,6 @@ with tab1:
                     +
                     "px";
 
-
                 item.style.top =
                     (
                         r.top
@@ -1269,7 +777,6 @@ with tab1:
                     )
                     +
                     "px";
-
 
                 lab.appendChild(item);
 
@@ -1284,14 +791,11 @@ with tab1:
 
             function(e) {
 
-
                 if (!dragging)
                     return;
 
-
                 const lr =
                     lab.getBoundingClientRect();
-
 
                 let x =
                     e.clientX
@@ -1300,14 +804,12 @@ with tab1:
                     -
                     offsetX;
 
-
                 let y =
                     e.clientY
                     -
                     lr.top
                     -
                     offsetY;
-
 
                 x =
                     Math.max(
@@ -1320,7 +822,6 @@ with tab1:
                         )
                     );
 
-
                 y =
                     Math.max(
                         0,
@@ -1332,12 +833,10 @@ with tab1:
                         )
                     );
 
-
                 item.style.left =
                     x
                     +
                     "px";
-
 
                 item.style.top =
                     y
@@ -1355,23 +854,18 @@ with tab1:
 
             function() {
 
-
                 if (!dragging)
                     return;
 
-
                 dragging = false;
-
 
                 const config =
                     configuracion[id];
-
 
                 const zona =
                     document.getElementById(
                         config.zona
                     );
-
 
                 if (
                     dentro(
@@ -1380,14 +874,11 @@ with tab1:
                     )
                 ) {
 
-
                     const zr =
                         zona.getBoundingClientRect();
 
-
                     const lr =
                         lab.getBoundingClientRect();
-
 
                     item.style.left =
                         (
@@ -1395,13 +886,12 @@ with tab1:
                             -
                             lr.left
                             +
-                            zr.width/2
+                            zr.width / 2
                             -
-                            item.offsetWidth/2
+                            item.offsetWidth / 2
                         )
                         +
                         "px";
-
 
                     item.style.top =
                         (
@@ -1409,37 +899,31 @@ with tab1:
                             -
                             lr.top
                             +
-                            zr.height/2
+                            zr.height / 2
                             -
-                            item.offsetHeight/2
+                            item.offsetHeight / 2
                         )
                         +
                         "px";
-
 
                     item.classList.add(
                         "correcto"
                     );
 
-
                     colocados[id] =
                         true;
-
 
                     mensaje.innerHTML =
                         config.texto;
 
                 }
 
-
                 else {
-
 
                     mensaje.innerHTML =
                         "⚠️ Esa región no corresponde a este dosímetro. Probá nuevamente.";
 
                 }
-
 
                 const total =
                     Object
@@ -1447,13 +931,10 @@ with tab1:
                     .filter(Boolean)
                     .length;
 
-
                 numero.innerHTML =
                     total;
 
-
                 if (total === 3) {
-
 
                     mensaje.innerHTML =
                         "🎉 ¡Muy bien! Ubicaste correctamente los tres dosímetros.";
@@ -1467,36 +948,40 @@ with tab1:
     }
 
 
-    activarArrastre("dos-cuerpo");
+    activarArrastre(
+        "dos-cuerpo"
+    );
 
-    activarArrastre("dos-anillo");
+    activarArrastre(
+        "dos-anillo"
+    );
 
-    activarArrastre("dos-ojos");
-
+    activarArrastre(
+        "dos-ojos"
+    );
 
     </script>
 
     </body>
-
     </html>
-
     """
 
     st.components.v1.html(
         html,
         height=850,
-        scrolling=False
+        scrolling=False,
     )
 
 
 # ============================================================
-# TAB 2
-# TLD INTERACTIVO
+# TAB 2 — TLD INTERACTIVO
 # ============================================================
 
 with tab2:
 
-    st.header("💎 ¿Qué ocurre dentro de un TLD?")
+    st.header(
+        "💎 ¿Qué ocurre dentro de un TLD?"
+    )
 
     st.write(
         """
@@ -1519,7 +1004,8 @@ with tab2:
             min_value=0,
             max_value=100,
             value=35,
-            step=1
+            step=1,
+            key="dosis_tld_u8",
         )
 
         temperatura = st.slider(
@@ -1527,7 +1013,8 @@ with tab2:
             min_value=25,
             max_value=300,
             value=25,
-            step=5
+            step=5,
+            key="temperatura_tld_u8",
         )
 
         if temperatura < 70:
@@ -1561,129 +1048,139 @@ with tab2:
             dosis_tld / 5
         )
 
-        puntos = ""
-
         posiciones = [
 
-            (130,195),
-            (180,210),
-            (230,185),
-            (285,218),
-            (335,190),
+            (130, 195),
 
-            (145,265),
-            (200,285),
-            (255,258),
-            (310,290),
-            (355,260),
+            (180, 210),
 
-            (155,340),
-            (215,325),
-            (270,350),
-            (325,330),
-            (370,345),
+            (230, 185),
 
-            (180,395),
-            (235,410),
-            (295,390),
-            (345,415),
-            (390,395)
+            (285, 218),
+
+            (335, 190),
+
+            (145, 265),
+
+            (200, 285),
+
+            (255, 258),
+
+            (310, 290),
+
+            (355, 260),
+
+            (155, 340),
+
+            (215, 325),
+
+            (270, 350),
+
+            (325, 330),
+
+            (370, 345),
+
+            (180, 395),
+
+            (235, 410),
+
+            (295, 390),
+
+            (345, 415),
+
+            (390, 395),
 
         ]
 
 
-   for i in range(
-    min(
-        cantidad,
-        len(posiciones)
-    )
-):
-
-    px, py = posiciones[i]
-
-    puntos += f"""
-
-    <circle
-        cx="{px}"
-        cy="{py}"
-        r="8"
-        fill="#56b9ff"
-        stroke="#d6f2ff"
-        stroke-width="2"
-    />
-
-    """
-
-
         fraccion_liberada = max(
-            0,
+
+            0.0,
+
             min(
-                1,
-                (temperatura - 70)
+
+                1.0,
+
+                (
+                    temperatura
+                    -
+                    70
+                )
                 /
-                140
-            )
+                140,
+
+            ),
+
         )
 
 
         visibles = int(
+
             cantidad
             *
             (
-                1
+                1.0
                 -
                 fraccion_liberada
             )
+
         )
 
 
         puntos_visibles = ""
 
-       for i in range(
-    min(
-        visibles,
-        len(posiciones)
-    )
-):
 
-    px, py = posiciones[i]
+        for i in range(
+            min(
+                visibles,
+                len(posiciones),
+            )
+        ):
 
-    puntos_visibles += f"""
+            px, py = posiciones[i]
 
-    <circle
-        cx="{px}"
-        cy="{py}"
-        r="8"
-        fill="#56b9ff"
-        stroke="#d6f2ff"
-        stroke-width="2"
-    />
-
-    """
+            puntos_visibles += f"""
+            <circle
+                cx="{px}"
+                cy="{py}"
+                r="8"
+                fill="#56b9ff"
+                stroke="#d6f2ff"
+                stroke-width="2"
+            />
+            """
 
 
         destellos = ""
+
 
         if temperatura >= 80:
 
             n_luz = max(
                 2,
-                cantidad - visibles
+                cantidad - visibles,
             )
 
             for i in range(
                 min(
                     n_luz,
-                    12
+                    12,
                 )
             ):
 
-                x_luz = 470 + (i % 4)*36
+                x_luz = (
+                    470
+                    +
+                    (i % 4) * 36
+                )
 
-                y_luz = 190 + (i // 4)*58
+                y_luz = (
+                    190
+                    +
+                    (i // 4) * 58
+                )
 
                 destellos += f"""
-
                 <circle
                     cx="{x_luz}"
                     cy="{y_luz}"
@@ -1691,12 +1188,10 @@ with tab2:
                     fill="#ffe65a"
                     opacity="0.85"
                 />
-
                 """
 
 
         svg_tld = f"""
-
         <svg
             viewBox="0 0 700 520"
             width="100%"
@@ -1713,7 +1208,6 @@ with tab2:
             stroke-width="2"
         />
 
-
         <text
             x="350"
             y="65"
@@ -1725,7 +1219,6 @@ with tab2:
             Representación del material termoluminiscente
         </text>
 
-
         <rect
             x="80"
             y="100"
@@ -1734,7 +1227,6 @@ with tab2:
             rx="10"
             fill="#8d62d4"
         />
-
 
         <text
             x="260"
@@ -1746,7 +1238,6 @@ with tab2:
             Banda de conducción
         </text>
 
-
         <rect
             x="80"
             y="435"
@@ -1755,7 +1246,6 @@ with tab2:
             rx="8"
             fill="#8d62d4"
         />
-
 
         <text
             x="260"
@@ -1766,7 +1256,6 @@ with tab2:
         >
             Banda de valencia
         </text>
-
 
         <rect
             x="110"
@@ -1779,7 +1268,6 @@ with tab2:
             stroke-width="2"
         />
 
-
         <text
             x="260"
             y="405"
@@ -1790,9 +1278,7 @@ with tab2:
             Trampas electrónicas
         </text>
 
-
         {puntos_visibles}
-
 
         <text
             x="530"
@@ -1805,9 +1291,7 @@ with tab2:
             LUZ EMITIDA
         </text>
 
-
         {destellos}
-
 
         <text
             x="530"
@@ -1819,7 +1303,6 @@ with tab2:
             {temperatura} °C
         </text>
 
-
         <text
             x="530"
             y="435"
@@ -1830,26 +1313,22 @@ with tab2:
             calentamiento simulado
         </text>
 
-
         </svg>
-
         """
-
 
         st.components.v1.html(
             svg_tld,
             height=540,
-            scrolling=False
+            scrolling=False,
         )
 
-
-    # CURVA GLOW
 
     temp = np.linspace(
         25,
         300,
-        500
+        500,
     )
+
 
     amplitud = (
         dosis_tld
@@ -1857,10 +1336,13 @@ with tab2:
         100
     )
 
+
     pico_principal = (
+
         amplitud
         *
         np.exp(
+
             -0.5
             *
             (
@@ -1873,15 +1355,20 @@ with tab2:
                 26
             )
             ** 2
+
         )
+
     )
 
+
     pico_secundario = (
+
         0.28
         *
         amplitud
         *
         np.exp(
+
             -0.5
             *
             (
@@ -1894,8 +1381,11 @@ with tab2:
                 17
             )
             ** 2
+
         )
+
     )
+
 
     brillo = (
         pico_principal
@@ -1917,7 +1407,7 @@ with tab2:
 
             mode="lines",
 
-            name="Curva Glow simulada"
+            name="Curva Glow simulada",
 
         )
 
@@ -1925,11 +1415,17 @@ with tab2:
 
 
     valor_actual = float(
+
         np.interp(
+
             temperatura,
+
             temp,
-            brillo
+
+            brillo,
+
         )
+
     )
 
 
@@ -1947,7 +1443,7 @@ with tab2:
                 size=15
             ),
 
-            name="Temperatura actual"
+            name="Temperatura actual",
 
         )
 
@@ -1962,14 +1458,14 @@ with tab2:
 
         yaxis_title="Intensidad luminosa relativa",
 
-        height=420
+        height=420,
 
     )
 
 
     st.plotly_chart(
         fig,
-        use_container_width=True
+        use_container_width=True,
     )
 
 
@@ -1983,8 +1479,7 @@ with tab2:
 
 
 # ============================================================
-# TAB 3
-# COMPARADOR DE DOSÍMETROS
+# TAB 3 — COMPARADOR
 # ============================================================
 
 with tab3:
@@ -2000,17 +1495,22 @@ with tab3:
         """
     )
 
+
     tipo = st.radio(
 
         "Seleccioná el tipo de dosímetro:",
 
         [
             "TLD",
+
             "OSLD",
-            "Dosímetro electrónico"
+
+            "Dosímetro electrónico",
         ],
 
-        horizontal=True
+        horizontal=True,
+
+        key="tipo_dosimetro_u8",
 
     )
 
@@ -2035,7 +1535,6 @@ with tab3:
 
 
         html_comp = """
-
         <div style="
             background:#101820;
             border:1px solid #445566;
@@ -2067,12 +1566,12 @@ with tab3:
         📊 Dosis
 
         </div>
-
         """
+
 
         st.components.v1.html(
             html_comp,
-            height=170
+            height=170,
         )
 
 
@@ -2101,7 +1600,6 @@ with tab3:
 
 
         html_comp = """
-
         <div style="
             background:#101820;
             border:1px solid #445566;
@@ -2133,12 +1631,12 @@ with tab3:
         📊 Dosis
 
         </div>
-
         """
+
 
         st.components.v1.html(
             html_comp,
-            height=170
+            height=170,
         )
 
 
@@ -2168,25 +1666,40 @@ with tab3:
 
 
         dosis_electronico = st.slider(
+
             "Dosis acumulada simulada (µSv)",
+
             min_value=0,
+
             max_value=500,
+
             value=25,
-            step=5
+
+            step=5,
+
+            key="dosis_electronico_u8",
+
         )
 
 
         tasa_electronico = st.slider(
+
             "Tasa de dosis simulada (µSv/h)",
+
             min_value=0,
+
             max_value=100,
+
             value=5,
-            step=1
+
+            step=1,
+
+            key="tasa_electronico_u8",
+
         )
 
 
         html_electronico = f"""
-
         <div style="
             width:430px;
             height:260px;
@@ -2216,14 +1729,18 @@ with tab3:
                     font-size:29px;
                     font-weight:bold;
                 ">
+
                     {dosis_electronico} µSv
+
                 </div>
 
                 <div style="
                     font-size:21px;
                     margin-top:12px;
                 ">
+
                     {tasa_electronico} µSv/h
+
                 </div>
 
             </div>
@@ -2234,17 +1751,18 @@ with tab3:
                 margin-top:26px;
                 font-weight:bold;
             ">
+
                 DOSÍMETRO ELECTRÓNICO
+
             </div>
 
         </div>
-
         """
 
 
         st.components.v1.html(
             html_electronico,
-            height=300
+            height=300,
         )
 
 
@@ -2268,8 +1786,7 @@ with tab3:
 
 
 # ============================================================
-# TAB 4
-# CALIBRACIÓN
+# TAB 4 — CALIBRACIÓN
 # ============================================================
 
 with tab4:
@@ -2287,6 +1804,7 @@ with tab4:
         """
     )
 
+
     st.warning(
         "⚠️ Los valores son exclusivamente didácticos. "
         "La actividad no representa un procedimiento real de irradiación o calibración."
@@ -2294,27 +1812,51 @@ with tab4:
 
 
     dosis_referencia = st.slider(
+
         "Dosis de referencia simulada (mSv)",
+
         min_value=0.1,
+
         max_value=10.0,
+
         value=2.0,
-        step=0.1
+
+        step=0.1,
+
+        key="dosis_referencia_u8",
+
     )
 
 
     dispersion = st.slider(
+
         "Variación de sensibilidad entre elementos (%)",
+
         min_value=0,
+
         max_value=20,
+
         value=8,
-        step=1
+
+        step=1,
+
+        key="dispersion_u8",
+
     )
 
 
     semilla = int(
-        dosis_referencia * 100
+
+        dosis_referencia
+        *
+        100
+
         +
-        dispersion * 31
+
+        dispersion
+        *
+        31
+
     )
 
 
@@ -2324,38 +1866,59 @@ with tab4:
 
 
     respuestas = (
+
         dosis_referencia
+
         *
+
         (
             1
+
             +
+
             rng.normal(
+
                 0,
-                dispersion/100,
-                4
+
+                dispersion / 100,
+
+                4,
+
             )
+
         )
+
     )
 
 
     promedio = float(
+
         np.mean(
             respuestas
         )
+
     )
 
 
     factor_correccion = (
+
         dosis_referencia
+
         /
+
         promedio
+
     )
 
 
     corregidas = (
+
         respuestas
+
         *
+
         factor_correccion
+
     )
 
 
@@ -2369,20 +1932,28 @@ with tab4:
         fig_cal = go.Figure()
 
 
+        etiquetas = [
+
+            "Elemento 1",
+
+            "Elemento 2",
+
+            "Elemento 3",
+
+            "Elemento 4",
+
+        ]
+
+
         fig_cal.add_trace(
 
             go.Bar(
 
-                x=[
-                    "Elemento 1",
-                    "Elemento 2",
-                    "Elemento 3",
-                    "Elemento 4"
-                ],
+                x=etiquetas,
 
                 y=respuestas,
 
-                name="Lectura inicial"
+                name="Lectura inicial",
 
             )
 
@@ -2393,16 +1964,11 @@ with tab4:
 
             go.Bar(
 
-                x=[
-                    "Elemento 1",
-                    "Elemento 2",
-                    "Elemento 3",
-                    "Elemento 4"
-                ],
+                x=etiquetas,
 
                 y=corregidas,
 
-                name="Lectura corregida"
+                name="Lectura corregida",
 
             )
 
@@ -2415,7 +1981,7 @@ with tab4:
 
             line_dash="dash",
 
-            annotation_text="Referencia"
+            annotation_text="Referencia",
 
         )
 
@@ -2428,47 +1994,61 @@ with tab4:
 
             barmode="group",
 
-            height=470
+            height=470,
 
         )
 
 
         st.plotly_chart(
             fig_cal,
-            use_container_width=True
+            use_container_width=True,
         )
 
 
     with col2:
 
         st.metric(
+
             "Referencia",
-            f"{dosis_referencia:.2f} mSv"
+
+            f"{dosis_referencia:.2f} mSv",
+
         )
 
 
         st.metric(
+
             "Promedio antes de corregir",
-            f"{promedio:.2f} mSv"
+
+            f"{promedio:.2f} mSv",
+
         )
 
 
         st.metric(
+
             "Factor de corrección conceptual",
-            f"{factor_correccion:.3f}"
+
+            f"{factor_correccion:.3f}",
+
         )
 
 
         promedio_corregido = float(
+
             np.mean(
                 corregidas
             )
+
         )
 
 
         st.metric(
+
             "Promedio corregido",
-            f"{promedio_corregido:.2f} mSv"
+
+            f"{promedio_corregido:.2f} mSv",
+
         )
 
 
