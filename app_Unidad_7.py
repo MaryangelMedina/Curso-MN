@@ -124,17 +124,11 @@ with tab1:
     )
 
     regiones = [
-
         (0, 100, "I"),
-
         (100, 320, "II"),
-
         (320, 800, "III"),
-
         (800, 980, "IV"),
-
         (980, 1450, "V"),
-
         (1450, 1650, "VI")
     ]
 
@@ -163,19 +157,11 @@ with tab1:
     )
 
     fig.add_trace(
-
         go.Scatter(
-
             x=[voltage],
-
             y=[valor_y],
-
             mode="markers",
-
-            marker=dict(
-                size=16
-            ),
-
+            marker=dict(size=16),
             name="Punto de operación"
         )
     )
@@ -204,44 +190,9 @@ with tab1:
         f"📍 Región actual: **{region}**"
     )
 
-    if "ionización" in region:
-
-        st.write(
-            """
-            En esta región se recolectan principalmente
-            los pares de iones producidos por la radiación.
-
-            Una aplicación típica es el **activímetro**.
-            """
-        )
-
-    elif "proporcional" in region.lower():
-
-        st.write(
-            """
-            En esta región ocurre multiplicación gaseosa.
-
-            La amplitud del pulso conserva información
-            relacionada con la energía depositada.
-            """
-        )
-
-    elif "Geiger" in region:
-
-        st.write(
-            """
-            En la región Geiger-Müller cada evento produce
-            una avalancha importante.
-
-            El detector permite contar eventos,
-            pero la amplitud del pulso ya no informa
-            la energía de la radiación.
-            """
-        )
-
 
 # =========================================================
-# 2. ACTIVÍMETRO
+# 2. ACTIVÍMETRO ARRASTRABLE
 # =========================================================
 
 with tab2:
@@ -250,21 +201,17 @@ with tab2:
 
     st.write(
         """
-        Simulá la medición de una jeringa dentro
-        de una cámara de ionización tipo pozo.
+        Arrastrá la jeringa con el mouse e introducila en el pozo del activímetro.
+        La pantalla cambia según la posición de la jeringa.
         """
     )
 
-    izquierda, derecha = st.columns(
-        [1.25, 0.75]
-    )
+    col1, col2 = st.columns([1.45, 0.55])
 
-    with derecha:
+    with col2:
 
         isotopo_real = st.selectbox(
-
             "Radionucleido presente en la jeringa",
-
             [
                 "Tc-99m",
                 "F-18",
@@ -274,9 +221,7 @@ with tab2:
         )
 
         isotopo_equipo = st.selectbox(
-
             "Radionucleido seleccionado en el activímetro",
-
             [
                 "Tc-99m",
                 "F-18",
@@ -286,325 +231,508 @@ with tab2:
         )
 
         actividad = st.slider(
-
             "Actividad de la jeringa (MBq)",
-
             min_value=1,
-
             max_value=1200,
-
             value=600
         )
 
-        entrada = st.slider(
-
-            "Introducir la jeringa en el activímetro",
-
-            min_value=0,
-
-            max_value=100,
-
-            value=0,
-
-            step=5
-        )
-
-        factores = {
-
-            "Tc-99m": 1.00,
-
-            "F-18": 1.07,
-
-            "I-131": 0.94,
-
-            "Lu-177": 0.98
-        }
-
-        geometria = (
-
-            0.03 +
-
-            0.97 *
-
-            (entrada/100)**1.6
-        )
-
-        lectura = (
-
-            actividad *
-
-            geometria *
-
-            (
-                factores[isotopo_real] /
-
-                factores[isotopo_equipo]
-            )
-        )
-
-        st.metric(
-
-            "Pantalla del activímetro",
-
-            f"{lectura:,.1f} MBq"
-        )
-
-        if entrada < 85:
-
-            st.warning(
-                "💉 La jeringa todavía no está completamente dentro del pozo."
-            )
-
-        elif isotopo_real != isotopo_equipo:
-
-            st.error(
-                "⚠️ El radionucleido seleccionado en el activímetro no coincide con la muestra."
-            )
-
+        if isotopo_real == isotopo_equipo:
+            st.success("✅ Radionucleido seleccionado correctamente.")
         else:
+            st.warning("⚠️ El radionucleido seleccionado no coincide con la muestra.")
 
-            st.success(
-                "✅ La jeringa está posicionada y el radionucleido seleccionado es correcto."
-            )
-
-
-    with izquierda:
-
-        posicion_jeringa = (
-            65 +
-            entrada * 2.35
+        st.caption(
+            "La lectura dentro del simulador es conceptual y depende de la posición de la jeringa."
         )
 
-        svg = f"""
+    factores = {
+        "Tc-99m": 1.00,
+        "F-18": 1.07,
+        "I-131": 0.94,
+        "Lu-177": 0.98
+    }
 
-        <svg
-        viewBox="0 0 700 500"
-        width="100%"
-        >
+    factor_cal = (
+        factores[isotopo_real]
+        /
+        factores[isotopo_equipo]
+    )
 
-        <defs>
+    with col1:
 
-        <linearGradient
-        id="cuerpo"
-        x1="0"
-        x2="1"
-        >
+        html_activimetro = f"""
+        <!DOCTYPE html>
+        <html>
 
-        <stop
-        offset="0%"
-        stop-color="#c7c7c7"
-        />
+        <head>
 
-        <stop
-        offset="50%"
-        stop-color="#f5f5f5"
-        />
+        <style>
 
-        <stop
-        offset="100%"
-        stop-color="#999"
-        />
+        body {{
+            margin: 0;
+            background: transparent;
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+        }}
 
-        </linearGradient>
+        #lab {{
+            position: relative;
+            width: 100%;
+            height: 700px;
+        }}
 
-        </defs>
+        #equipo {{
+            position: absolute;
+            left: 50%;
+            top: 245px;
+            transform: translateX(-50%);
+            width: 610px;
+            height: 360px;
+            border-radius: 32px;
+            border: 4px solid #777;
+            background:
+                linear-gradient(
+                    90deg,
+                    #bdbdbd,
+                    #f7f7f7,
+                    #c3c3c3
+                );
+            box-shadow:
+                0 12px 28px rgba(0,0,0,.25);
+        }}
+
+        #pozo {{
+            position: absolute;
+            left: 120px;
+            top: 54px;
+            width: 190px;
+            height: 215px;
+            background:
+                linear-gradient(
+                    90deg,
+                    #5a5a5a,
+                    #222,
+                    #5a5a5a
+                );
+            border-radius: 0 0 55px 55px;
+        }}
+
+        #boca {{
+            position: absolute;
+            left: 108px;
+            top: 28px;
+            width: 215px;
+            height: 55px;
+            background: #1a1a1a;
+            border-radius: 50%;
+            border: 6px solid #555;
+        }}
+
+        #entrada {{
+            position: absolute;
+            left: 148px;
+            top: 47px;
+            width: 135px;
+            height: 32px;
+            background: #050505;
+            border-radius: 50%;
+        }}
+
+        #panel {{
+            position: absolute;
+            right: 40px;
+            top: 72px;
+            width: 170px;
+            height: 190px;
+            border-radius: 18px;
+            background: #252525;
+            box-shadow:
+                inset 0 0 0 2px #111;
+        }}
+
+        #pantalla {{
+            position: absolute;
+            left: 18px;
+            top: 22px;
+            width: 134px;
+            height: 68px;
+            background: #cce9c6;
+            border-radius: 8px;
+            border: 3px solid #111;
+            text-align: center;
+            font-family: monospace;
+        }}
+
+        #lectura {{
+            font-size: 25px;
+            font-weight: bold;
+            margin-top: 9px;
+        }}
+
+        #unidad {{
+            font-size: 15px;
+        }}
+
+        #iso {{
+            position: absolute;
+            top: 105px;
+            width: 100%;
+            text-align: center;
+            color: white;
+            font-weight: bold;
+        }}
+
+        .boton {{
+            position: absolute;
+            bottom: 26px;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: #777;
+        }}
+
+        #b1 {{
+            left: 35px;
+        }}
+
+        #b2 {{
+            left: 72px;
+        }}
+
+        #b3 {{
+            left: 109px;
+        }}
+
+        #jeringa {{
+            position: absolute;
+            left: calc(50% - 40px);
+            top: 35px;
+            width: 80px;
+            height: 175px;
+            cursor: grab;
+            user-select: none;
+            z-index: 50;
+        }}
+
+        #jeringa:active {{
+            cursor: grabbing;
+        }}
+
+        #embolo {{
+            position: absolute;
+            left: 18px;
+            top: 0;
+            width: 44px;
+            height: 15px;
+            background: #d6d6d6;
+            border-radius: 5px;
+            border: 2px solid #888;
+        }}
+
+        #vastago {{
+            position: absolute;
+            left: 34px;
+            top: 14px;
+            width: 12px;
+            height: 30px;
+            background: #bbb;
+        }}
+
+        #cuerpo-jeringa {{
+            position: absolute;
+            left: 16px;
+            top: 42px;
+            width: 48px;
+            height: 82px;
+            border-radius: 8px;
+            border: 3px solid #537180;
+            background: #eaf7ff;
+        }}
+
+        #liquido {{
+            position: absolute;
+            left: 21px;
+            top: 83px;
+            width: 38px;
+            height: 35px;
+            background: #8fd0fa;
+        }}
+
+        #aguja {{
+            position: absolute;
+            left: 38px;
+            top: 124px;
+            width: 4px;
+            height: 45px;
+            background: #999;
+        }}
+
+        #etiqueta {{
+            position: absolute;
+            width: 300px;
+            left: calc(50% - 150px);
+            top: 8px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 18px;
+        }}
+
+        #estado {{
+            position: absolute;
+            width: 100%;
+            bottom: 20px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+        }}
+
+        </style>
+
+        </head>
+
+        <body>
+
+        <div id="lab">
+
+            <div id="etiqueta">
+                Jeringa con {isotopo_real} — {actividad} MBq
+            </div>
+
+            <div id="jeringa">
+
+                <div id="embolo"></div>
+
+                <div id="vastago"></div>
+
+                <div id="cuerpo-jeringa"></div>
+
+                <div id="liquido"></div>
+
+                <div id="aguja"></div>
+
+            </div>
 
 
-        <!-- cuerpo activimetro -->
+            <div id="equipo">
 
-        <rect
-        x="160"
-        y="155"
-        width="380"
-        height="290"
-        rx="22"
-        fill="url(#cuerpo)"
-        stroke="#777"
-        stroke-width="3"
-        />
+                <div id="pozo"></div>
 
+                <div id="boca"></div>
 
-        <!-- pozo -->
+                <div id="entrada"></div>
 
-        <ellipse
-        cx="300"
-        cy="205"
-        rx="70"
-        ry="24"
-        fill="#222"
-        />
+                <div id="panel">
 
-        <rect
-        x="230"
-        y="205"
-        width="140"
-        height="165"
-        fill="#444"
-        />
+                    <div id="pantalla">
 
-        <ellipse
-        cx="300"
-        cy="370"
-        rx="70"
-        ry="24"
-        fill="#666"
-        />
+                        <div id="lectura">
+                            0.0
+                        </div>
 
-        <ellipse
-        cx="300"
-        cy="205"
-        rx="40"
-        ry="12"
-        fill="#050505"
-        />
+                        <div id="unidad">
+                            MBq
+                        </div>
+
+                    </div>
+
+                    <div id="iso">
+                        {isotopo_equipo}
+                    </div>
+
+                    <div class="boton" id="b1"></div>
+
+                    <div class="boton" id="b2"></div>
+
+                    <div class="boton" id="b3"></div>
+
+                </div>
+
+            </div>
+
+            <div id="estado">
+                🖱️ Arrastrá la jeringa hacia el pozo
+            </div>
+
+        </div>
 
 
-        <!-- pantalla -->
+        <script>
 
-        <rect
-        x="425"
-        y="205"
-        width="95"
-        height="105"
-        rx="8"
-        fill="#2c2c2c"
-        />
+        const syringe = document.getElementById("jeringa");
 
-        <rect
-        x="438"
-        y="220"
-        width="68"
-        height="33"
-        rx="4"
-        fill="#cce6c4"
-        />
+        const well = document.getElementById("entrada");
 
-        <text
-        x="472"
-        y="242"
-        text-anchor="middle"
-        font-family="monospace"
-        font-size="15"
-        >
+        const reading = document.getElementById("lectura");
 
-        {lectura:06.1f}
+        const status = document.getElementById("estado");
 
-        </text>
+        let dragging = false;
 
-        <text
-        x="472"
-        y="275"
-        text-anchor="middle"
-        font-size="13"
-        fill="white"
-        >
+        let offsetX = 0;
 
-        MBq
-
-        </text>
-
-        <text
-        x="472"
-        y="296"
-        text-anchor="middle"
-        font-size="12"
-        fill="white"
-        >
-
-        {isotopo_equipo}
-
-        </text>
+        let offsetY = 0;
 
 
-        <!-- jeringa -->
+        function updateReading() {{
 
-        <g
-        transform="translate(0,{posicion_jeringa})"
-        >
+            const s = syringe.getBoundingClientRect();
 
-        <rect
-        x="280"
-        y="-55"
-        width="40"
-        height="72"
-        rx="6"
-        fill="#eaf6ff"
-        stroke="#516773"
-        stroke-width="2"
-        />
+            const w = well.getBoundingClientRect();
 
-        <rect
-        x="284"
-        y="-18"
-        width="32"
-        height="31"
-        fill="#9fd8ff"
-        />
+            const sx = s.left + s.width/2;
 
-        <line
-        x1="300"
-        y1="17"
-        x2="300"
-        y2="56"
-        stroke="#777"
-        stroke-width="3"
-        />
+            const sy = s.top + s.height*0.75;
 
-        <rect
-        x="274"
-        y="-64"
-        width="52"
-        height="9"
-        rx="3"
-        fill="#d0d0d0"
-        />
+            const wx = w.left + w.width/2;
 
-        <rect
-        x="294"
-        y="-83"
-        width="12"
-        height="19"
-        fill="#c0c0c0"
-        />
+            const wy = w.top + w.height/2;
 
-        </g>
+            const dx = sx - wx;
+
+            const dy = sy - wy;
+
+            const distance = Math.sqrt(
+                dx*dx +
+                dy*dy
+            );
+
+            let geometry = 0;
+
+            if (distance < 45) {{
+                geometry = 1.0;
+                status.innerHTML = "✅ Jeringa correctamente posicionada dentro del pozo";
+            }}
+
+            else if (distance < 100) {{
+                geometry = 0.65;
+                status.innerHTML = "⚠️ Jeringa parcialmente introducida";
+            }}
+
+            else if (distance < 170) {{
+                geometry = 0.20;
+                status.innerHTML = "↘️ Acercando la jeringa al detector";
+            }}
+
+            else {{
+                geometry = 0.01;
+                status.innerHTML = "🖱️ Arrastrá la jeringa hacia el pozo";
+            }}
+
+            const activity = {actividad};
+
+            const calibration = {factor_cal};
+
+            const value =
+                activity *
+                geometry *
+                calibration;
+
+            reading.innerHTML =
+                value.toFixed(1);
+
+        }}
 
 
-        <text
-        x="300"
-        y="42"
-        text-anchor="middle"
-        font-size="18"
-        font-weight="600"
-        >
+        syringe.addEventListener(
+            "mousedown",
+            function(e) {{
 
-        Jeringa con {isotopo_real}
+                dragging = true;
 
-        </text>
+                const r =
+                    syringe.getBoundingClientRect();
 
-        <text
-        x="300"
-        y="67"
-        text-anchor="middle"
-        font-size="14"
-        >
+                offsetX =
+                    e.clientX -
+                    r.left;
 
-        {actividad} MBq
+                offsetY =
+                    e.clientY -
+                    r.top;
 
-        </text>
+            }}
+        );
 
-        </svg>
 
+        document.addEventListener(
+            "mousemove",
+            function(e) {{
+
+                if (!dragging)
+                    return;
+
+                const lab =
+                    document
+                    .getElementById("lab")
+                    .getBoundingClientRect();
+
+                let x =
+                    e.clientX -
+                    lab.left -
+                    offsetX;
+
+                let y =
+                    e.clientY -
+                    lab.top -
+                    offsetY;
+
+                x =
+                    Math.max(
+                        0,
+                        Math.min(
+                            lab.width -
+                            syringe.offsetWidth,
+                            x
+                        )
+                    );
+
+                y =
+                    Math.max(
+                        0,
+                        Math.min(
+                            lab.height -
+                            syringe.offsetHeight,
+                            y
+                        )
+                    );
+
+                syringe.style.left =
+                    x + "px";
+
+                syringe.style.top =
+                    y + "px";
+
+                updateReading();
+
+            }}
+        );
+
+
+        document.addEventListener(
+            "mouseup",
+            function() {{
+
+                dragging = false;
+
+            }}
+        );
+
+
+        updateReading();
+
+        </script>
+
+        </body>
+
+        </html>
         """
 
         st.components.v1.html(
-            svg,
-            height=510
+            html_activimetro,
+            height=730,
+            scrolling=False
         )
-
-    st.caption(
-        "La variación con la posición y los factores mostrados forman parte de un modelo conceptual del simulador."
-    )
 
 
 # =========================================================
@@ -620,7 +748,7 @@ with tab3:
     st.write(
         """
         Mové el detector con respecto al derrame
-        y observá cómo cambia la tasa de conteo.
+        y observá cómo cambia la tasa de conteo y la lectura equivalente simulada.
         """
     )
 
@@ -631,109 +759,91 @@ with tab3:
     with derecha:
 
         distancia = st.slider(
-
             "Distancia al derrame (m)",
-
             min_value=0.5,
-
             max_value=2.0,
-
             value=1.0,
-
             step=0.1
         )
 
         intensidad = st.slider(
-
             "Intensidad relativa del derrame",
-
             min_value=1,
-
             max_value=10,
-
             value=5
         )
 
         fondo = st.number_input(
-
             "Fondo (cps)",
-
             min_value=0.0,
-
             max_value=500.0,
-
             value=35.0,
-
             step=1.0
         )
 
         esperado = (
-
-            100 *
-
-            intensidad /
-
-            distancia**2
-
-            +
-
-            fondo
+            100
+            * intensidad
+            / distancia**2
+            + fondo
         )
 
-        if st.button(
-            "📟 Tomar una medición"
-        ):
+        if st.button("📟 Tomar una medición"):
 
             st.session_state["medicion"] = (
-
                 st.session_state.get(
                     "medicion",
                     0
                 )
-
                 + 1
             )
 
         semilla = (
-
             st.session_state.get(
                 "medicion",
                 0
             )
-
-            +
-
-            int(
+            + int(
                 distancia * 1000
             )
-
-            +
-
-            intensidad * 77
+            + intensidad * 77
         )
 
         rng = np.random.default_rng(
             semilla
         )
 
-        observado = int(
+        cuentas = int(
             rng.poisson(
                 esperado
             )
         )
 
-        st.metric(
+        # Conversión únicamente educativa.
+        factor_simulado = 0.002
 
-            "Pantalla del Geiger",
-
-            f"{observado} cps"
+        tasa_dosis = (
+            cuentas
+            * factor_simulado
         )
 
-        st.write(
-            f"""
-            **Distancia:** {distancia:.1f} m
+        st.metric(
+            "Tasa de conteo",
+            f"{cuentas} cps"
+        )
 
-            **Fondo:** {fondo:.0f} cps
+        st.metric(
+            "Lectura equivalente simulada",
+            f"{tasa_dosis:.2f} µSv/h"
+        )
+
+        st.info(
+            """
+            La relación entre cps y µSv/h que aparece acá
+            es solamente didáctica.
+
+            En un equipo real depende de la respuesta energética
+            y de la calibración del instrumento.
             """
         )
 
@@ -741,20 +851,16 @@ with tab3:
     with izquierda:
 
         posicion_detector = (
-
-            160 +
-
-            (distancia - 0.5)
-
+            160
+            + (distancia - 0.5)
             / 1.5
-
             * 455
         )
 
         svg = f"""
 
         <svg
-        viewBox="0 0 760 500"
+        viewBox="0 0 760 560"
         width="100%"
         >
 
@@ -781,48 +887,32 @@ with tab3:
         </defs>
 
 
-        <!-- piso -->
-
         <rect
         x="25"
         y="60"
         width="710"
-        height="380"
+        height="430"
         rx="18"
         fill="#eeeae2"
         stroke="#c9c4bb"
         />
 
 
-        <!-- derrame -->
-
         <ellipse
-
         cx="115"
-
-        cy="270"
-
+        cy="295"
         rx="{40 + intensidad*3}"
-
         ry="{28 + intensidad*2}"
-
         fill="url(#derrame)"
-
         />
 
 
         <text
-
         x="115"
-
-        y="335"
-
+        y="365"
         text-anchor="middle"
-
         font-size="18"
-
         font-weight="600"
-
         >
 
         Derrame F-18
@@ -830,154 +920,118 @@ with tab3:
         </text>
 
 
-        <!-- referencias -->
-
         <line
-
         x1="115"
-
-        y1="115"
-
+        y1="120"
         x2="655"
-
-        y2="115"
-
+        y2="120"
         stroke="#888"
-
         stroke-dasharray="6 6"
-
         />
 
 
         <text
         x="255"
-        y="98"
+        y="102"
         text-anchor="middle"
+        font-size="16"
         >
-
         0,5 m
-
         </text>
 
 
         <text
         x="390"
-        y="98"
+        y="102"
         text-anchor="middle"
+        font-size="16"
         >
-
         1 m
-
         </text>
 
 
         <text
         x="655"
-        y="98"
+        y="102"
         text-anchor="middle"
+        font-size="16"
         >
-
         2 m
-
         </text>
 
-
-        <!-- detector geiger -->
 
         <g
-
-        transform="translate({posicion_detector},230)"
-
+        transform="translate({posicion_detector},250)"
         >
 
         <rect
-
-        x="-55"
-
-        y="-35"
-
-        width="110"
-
-        height="70"
-
-        rx="15"
-
+        x="-72"
+        y="-52"
+        width="145"
+        height="105"
+        rx="18"
         fill="#343434"
-
         stroke="#111"
-
-        stroke-width="2"
-
+        stroke-width="3"
         />
 
 
         <rect
-
-        x="-33"
-
-        y="-23"
-
-        width="66"
-
-        height="29"
-
-        rx="4"
-
+        x="-55"
+        y="-38"
+        width="110"
+        height="58"
+        rx="7"
         fill="#cce6c4"
-
+        stroke="#111"
         />
 
 
         <text
-
         x="0"
-
-        y="-3"
-
+        y="-14"
         text-anchor="middle"
-
         font-family="monospace"
-
-        font-size="15"
-
+        font-size="18"
+        font-weight="600"
         >
 
-        {observado} cps
+        {cuentas} cps
+
+        </text>
+
+
+        <text
+        x="0"
+        y="10"
+        text-anchor="middle"
+        font-family="monospace"
+        font-size="16"
+        >
+
+        {tasa_dosis:.2f} µSv/h
 
         </text>
 
 
         <rect
-
-        x="55"
-
-        y="-12"
-
-        width="86"
-
-        height="24"
-
-        rx="10"
-
+        x="73"
+        y="-16"
+        width="105"
+        height="32"
+        rx="14"
         fill="#4b4b4b"
-
         stroke="#111"
-
+        stroke-width="2"
         />
 
 
         <text
-
         x="0"
-
-        y="58"
-
+        y="82"
         text-anchor="middle"
-
-        font-size="16"
-
+        font-size="17"
         font-weight="600"
-
         >
 
         Geiger-Müller
@@ -987,69 +1041,21 @@ with tab3:
         </g>
 
 
-        <!-- distancia -->
-
         <line
-
         x1="115"
-
-        y1="380"
-
+        y1="425"
         x2="{posicion_detector}"
-
-        y2="380"
-
+        y2="425"
         stroke="#333"
-
         stroke-width="3"
-
-        />
-
-
-        <line
-
-        x1="115"
-
-        y1="370"
-
-        x2="115"
-
-        y2="390"
-
-        stroke="#333"
-
-        stroke-width="3"
-
-        />
-
-
-        <line
-
-        x1="{posicion_detector}"
-
-        y1="370"
-
-        x2="{posicion_detector}"
-
-        y2="390"
-
-        stroke="#333"
-
-        stroke-width="3"
-
         />
 
 
         <text
-
         x="{(115 + posicion_detector)/2}"
-
-        y="410"
-
+        y="458"
         text-anchor="middle"
-
-        font-size="18"
-
+        font-size="19"
         >
 
         {distancia:.1f} m
@@ -1062,12 +1068,12 @@ with tab3:
 
         st.components.v1.html(
             svg,
-            height=510
+            height=650,
+            scrolling=False
         )
 
     st.caption(
         """
-        El comportamiento de la distancia se representa mediante
-        un modelo simplificado para facilitar la comprensión conceptual.
+        El comportamiento mostrado es un modelo educativo simplificado.
         """
     )
