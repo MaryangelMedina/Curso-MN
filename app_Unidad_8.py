@@ -1186,11 +1186,12 @@ with tab2:
 
 
         svg_tld = f"""
-        <svg
-            viewBox="0 0 700 520"
-            width="100%"
-        >
-
+       <svg
+    viewBox="0 0 700 560"
+    width="100%"
+    height="100%"
+    preserveAspectRatio="xMidYMid meet"
+>
         <rect
             x="25"
             y="25"
@@ -1312,7 +1313,7 @@ with tab2:
 
         st.components.v1.html(
             svg_tld,
-            height=540,
+            height=650,
             scrolling=False,
         )
 
