@@ -720,6 +720,8 @@ with tab2:
             font-size: 18px;
 
             font-weight: bold;
+            
+            color: white;
         }}
 
 
