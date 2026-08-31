@@ -1601,7 +1601,7 @@ with tab3:
 
     .escena {{
         width: 100%;
-        min-height: 620px;
+        min-height: 760px;
         background: linear-gradient(135deg,#101820,#0d1117);
         border: 1px solid #394957;
         border-radius: 24px;
@@ -1929,7 +1929,7 @@ with tab3:
 
     st.components.v1.html(
         html_comparador,
-        height=680,
+        height=850,
         scrolling=False,
     )
 
@@ -2406,59 +2406,24 @@ with tab4:
             # IMPORTANCIA DE LA CALIBRACIÓN
             # ------------------------------------------------
 
-            st.markdown(
-                """
-                <div style="
-                    background:linear-gradient(135deg,#172738,#12202d);
-                    border:2px solid #55a9e8;
-                    border-radius:20px;
-                    padding:25px;
-                    margin-top:20px;
-                    color:white;
-                ">
+       st.markdown("### 📐 ¿Por qué es importante la calibración?")
 
-                    <div style="
-                        font-size:24px;
-                        font-weight:bold;
-                        margin-bottom:14px;
-                        color:#72c2ff;
-                    ">
-                        📐 ¿Por qué es importante la calibración?
-                    </div>
+st.write(
+    """
+    Un dosímetro puede generar una lectura aunque su respuesta
+    no represente adecuadamente la exposición recibida.
 
-                    <div style="
-                        font-size:17px;
-                        line-height:1.65;
-                    ">
+    La calibración permite relacionar la respuesta del dosímetro
+    con una **referencia conocida** y comprobar que la información
+    obtenida sea adecuada para la vigilancia dosimétrica.
 
-                        Un dosímetro puede generar una lectura aunque su
-                        respuesta no represente adecuadamente la exposición
-                        recibida.
+    En esta simulación, la referencia es **1,00 mSv**, pero el
+    Dosímetro C informa solamente **0,40 mSv**.
 
-                        <br><br>
-
-                        La calibración permite relacionar la respuesta del
-                        dosímetro con una <b>referencia conocida</b> y comprobar
-                        que la información obtenida sea adecuada para la
-                        vigilancia dosimétrica.
-
-                        <br><br>
-
-                        En esta simulación, la referencia es
-                        <b>1,00 mSv</b>, pero el Dosímetro C informa solamente
-                        <b>0,40 mSv</b>.
-
-                        <br><br>
-
-                        Una diferencia de esta magnitud produciría una
-                        <b>subestimación de la exposición registrada</b>.
-
-                    </div>
-
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
+    Una diferencia de esta magnitud produciría una
+    **subestimación de la exposición registrada**.
+    """
+)
 
             st.markdown("### 🔎 Miralo de otra manera")
 
