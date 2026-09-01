@@ -2511,9 +2511,9 @@ with tab5:
         "Esófago": (350, 215, 10, 60),
         "Hígado": (385, 292, 38, 23),
         "Estómago": (330, 312, 28, 23),
-        "Colon": (350, 350, 45, 34),
-        "Vejiga": (350, 410, 22, 18),
-        "Gónadas": (350, 445, 20, 15),
+        "Colon": (350, 338, 45, 34),
+        "Vejiga": (350, 374, 22, 18),
+        "Gónadas": (350, 402, 20, 15),
         "Piel": (350, 285, 82, 190),
         "Superficie ósea": (350, 285, 58, 165),
         "Resto de tejidos": (350, 285, 70, 180),
@@ -2643,11 +2643,55 @@ with tab5:
 
           <!-- Silueta -->
           <circle cx="350" cy="105" r="46" fill="#d6a47e"/>
-          <path d="M285 175 Q350 150 415 175 L438 365
-                   Q420 395 390 385 L382 505 L350 505
-                   L340 385 L310 505 L278 505 L310 385
-                   Q280 395 262 365 Z"
-                fill="#e9eef2" stroke="#9eabb5" stroke-width="4"/>
+          <rect x="336" y="145" width="28" height="28" rx="8" fill="#c99470"/>
+
+          <!-- Torso -->
+          <path d="
+              M292 177
+              Q350 154 408 177
+              L425 325
+              Q420 350 395 365
+              Q372 378 350 378
+              Q328 378 305 365
+              Q280 350 275 325
+              Z"
+              fill="#e9eef2"
+              stroke="#9eabb5"
+              stroke-width="4"/>
+
+          <!-- Pelvis -->
+          <path d="
+              M310 350
+              Q350 337 390 350
+              L400 390
+              Q375 410 350 410
+              Q325 410 300 390
+              Z"
+              fill="#e9eef2"
+              stroke="#9eabb5"
+              stroke-width="4"/>
+
+          <!-- Pierna izquierda -->
+          <path d="
+              M305 390
+              L344 390
+              L338 505
+              L294 505
+              Z"
+              fill="#e9eef2"
+              stroke="#9eabb5"
+              stroke-width="4"/>
+
+          <!-- Pierna derecha -->
+          <path d="
+              M356 390
+              L395 390
+              L406 505
+              L362 505
+              Z"
+              fill="#e9eef2"
+              stroke="#9eabb5"
+              stroke-width="4"/>
 
           <!-- Órganos esquemáticos -->
           <ellipse cx="350" cy="100" rx="27" ry="18" fill="#e5a1a8"/>
@@ -2657,12 +2701,16 @@ with tab5:
           <rect x="346" y="185" width="8" height="78" rx="4" fill="#d8b07b"/>
           <ellipse cx="385" cy="292" rx="38" ry="23" fill="#8e3c34"/>
           <ellipse cx="329" cy="310" rx="27" ry="23" fill="#e7a66f"/>
-          <rect x="315" y="330" width="70" height="55" rx="22"
+          <rect x="315" y="315" width="70" height="55" rx="22"
             fill="none" stroke="#c89a63" stroke-width="10"/>
-          <ellipse cx="350" cy="406" rx="21" ry="17" fill="#8cc9e8"/>
-          <ellipse cx="338" cy="443" rx="9" ry="12" fill="#e6bd6a"/>
-          <ellipse cx="362" cy="443" rx="9" ry="12" fill="#e6bd6a"/>
-          <line x1="350" y1="178" x2="350" y2="390"
+
+          <!-- Vejiga -->
+          <ellipse cx="350" cy="374" rx="20" ry="16" fill="#8cc9e8"/>
+
+          <!-- Gónadas: ubicadas en la región pélvica, entre el inicio de los muslos -->
+          <ellipse cx="340" cy="402" rx="9" ry="12" fill="#e6bd6a"/>
+          <ellipse cx="360" cy="402" rx="9" ry="12" fill="#e6bd6a"/>
+          <line x1="350" y1="178" x2="350" y2="350"
             stroke="#9ec5df" stroke-width="7" opacity="0.55"/>
 
           {resaltado}
@@ -2817,4 +2865,3 @@ with tab5:
                 st.success("✅ Correcto: 1 mSv + 0,5 mSv = 1,5 mSv.")
             else:
                 st.warning("Para fotones y electrones, wR = 1.")
-
