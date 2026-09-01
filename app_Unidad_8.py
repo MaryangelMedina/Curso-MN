@@ -2542,6 +2542,14 @@ with tab5:
             key="radiacion_mag_u8",
         )
 
+        simbolos_radiacion = {
+            "Fotones / gamma": "γ",
+            "Electrones / beta": "β",
+            "Protones": "p⁺",
+            "Partículas alfa": "α",
+            "Neutrones": "n",
+        }
+
         if radiacion == "Fotones / gamma":
             wr = 1.0
         elif radiacion == "Electrones / beta":
@@ -2567,6 +2575,8 @@ with tab5:
                 wr = 5.0 + 17.0 * np.exp(-(np.log(2.0 * e) ** 2) / 6.0)
             else:
                 wr = 2.5 + 3.25 * np.exp(-(np.log(0.04 * e) ** 2) / 6.0)
+
+        simbolo_rad = simbolos_radiacion[radiacion]
 
         st.metric("Factor de ponderación de la radiación (wR)", f"{wr:.2f}")
 
@@ -2601,13 +2611,37 @@ with tab5:
             fill="#ffcc4d" opacity="0.72" stroke="#ffffff" stroke-width="3"/>
             """
 
+        # Posición de la etiqueta del órgano según su ubicación
+        if cx < 350:
+            etiqueta_x = 95
+            linea_x2 = cx - rx
+            ancla = "start"
+        else:
+            etiqueta_x = 500
+            linea_x2 = cx + rx
+            ancla = "start"
+
+        etiqueta_y = max(95, min(470, cy))
+
         svg_cuerpo = f"""
         <svg viewBox="0 0 700 560" width="100%" height="100%">
+
+          <defs>
+            <marker id="flecha" markerWidth="10" markerHeight="10"
+                    refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+              <path d="M0,0 L0,6 L9,3 z" fill="#ffcc4d"/>
+            </marker>
+          </defs>
+
           <rect x="25" y="20" width="650" height="520" rx="28"
             fill="#101820" stroke="#415264" stroke-width="2"/>
-          <text x="350" y="58" text-anchor="middle" fill="white"
-            font-size="22" font-weight="bold">Selección anatómica</text>
 
+          <text x="350" y="58" text-anchor="middle" fill="white"
+            font-size="22" font-weight="bold">
+            Selección anatómica
+          </text>
+
+          <!-- Silueta -->
           <circle cx="350" cy="105" r="46" fill="#d6a47e"/>
           <path d="M285 175 Q350 150 415 175 L438 365
                    Q420 395 390 385 L382 505 L350 505
@@ -2615,6 +2649,7 @@ with tab5:
                    Q280 395 262 365 Z"
                 fill="#e9eef2" stroke="#9eabb5" stroke-width="4"/>
 
+          <!-- Órganos esquemáticos -->
           <ellipse cx="350" cy="100" rx="27" ry="18" fill="#e5a1a8"/>
           <rect x="342" y="148" width="16" height="14" rx="5" fill="#e5a1a8"/>
           <ellipse cx="323" cy="220" rx="25" ry="46" fill="#d85c5c"/>
@@ -2632,10 +2667,53 @@ with tab5:
 
           {resaltado}
 
-          <text x="350" y="530" text-anchor="middle" fill="#ffcc4d"
-            font-size="18" font-weight="bold">{organo} · wT = {wt:.2f}</text>
+          <!-- Flecha y rótulo del órgano seleccionado -->
+          <line x1="{etiqueta_x}" y1="{etiqueta_y}"
+                x2="{linea_x2}" y2="{cy}"
+                stroke="#ffcc4d" stroke-width="3"
+                marker-end="url(#flecha)"/>
+
+          <rect x="{etiqueta_x-8}" y="{etiqueta_y-38}"
+                width="165" height="58" rx="10"
+                fill="#1b2b38" stroke="#ffcc4d" stroke-width="2"/>
+
+          <text x="{etiqueta_x+5}" y="{etiqueta_y-15}"
+                fill="white" font-size="15" font-weight="bold">
+                {organo}
+          </text>
+
+          <text x="{etiqueta_x+5}" y="{etiqueta_y+7}"
+                fill="#ffcc4d" font-size="15" font-weight="bold">
+                wT = {wt:.2f}
+          </text>
+
+          <!-- Símbolo y wR de la radiación seleccionada -->
+          <rect x="492" y="78" width="145" height="92" rx="15"
+                fill="#172738" stroke="#72c2ff" stroke-width="2"/>
+
+          <text x="564" y="108" text-anchor="middle"
+                fill="#b8dfff" font-size="14">
+                Radiación seleccionada
+          </text>
+
+          <text x="535" y="145" text-anchor="middle"
+                fill="white" font-size="34" font-weight="bold">
+                {simbolo_rad}
+          </text>
+
+          <text x="592" y="143" text-anchor="middle"
+                fill="#72c2ff" font-size="18" font-weight="bold">
+                wR = {wr:.2f}
+          </text>
+
+          <text x="350" y="530" text-anchor="middle" fill="#cbd5df"
+                font-size="15">
+                El órgano resaltado corresponde a la selección actual
+          </text>
+
         </svg>
         """
+
         st.components.v1.html(svg_cuerpo, height=620, scrolling=False)
 
     st.subheader("🧮 Desarrollo del cálculo")
