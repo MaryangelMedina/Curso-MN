@@ -23,12 +23,13 @@ st.info(
     "y no sustituyen procedimientos de dosimetría, calibración ni protección radiológica reales."
 )
 
-tab1, tab2, tab3, tab4 = st.tabs(
+tab1, tab2, tab3, tab4, tab5 = st.tabs(
     [
         "👤 ¿Dónde llevo mi dosímetro?",
         "💎 TLD interactivo",
         "🔬 Comparador de dosímetros",
         "📐 Calibración",
+        "🧍 Magnitudes dosimétricas",
     ]
 )
 
@@ -2468,3 +2469,274 @@ with tab4:
                 y buscá cuál se aleja de manera más evidente.
                 """
             )
+
+
+# ============================================================
+# TAB 5 — MAGNITUDES DOSIMÉTRICAS
+# ============================================================
+
+with tab5:
+    st.header("🧍 Magnitudes dosimétricas")
+
+    st.write("""
+    Usá esta calculadora para relacionar **dosis absorbida**, **dosis equivalente**
+    y **dosis efectiva**.
+
+    **Dosis absorbida (Gy) → wR → dosis equivalente (Sv) → wT → dosis efectiva (Sv)**
+    """)
+
+    factores_tejido = {
+        "Médula ósea roja": 0.12,
+        "Colon": 0.12,
+        "Pulmón": 0.12,
+        "Estómago": 0.12,
+        "Mamas": 0.12,
+        "Resto de tejidos": 0.12,
+        "Gónadas": 0.08,
+        "Vejiga": 0.04,
+        "Hígado": 0.04,
+        "Esófago": 0.04,
+        "Tiroides": 0.04,
+        "Piel": 0.01,
+        "Superficie ósea": 0.01,
+        "Cerebro": 0.01,
+    }
+
+    posiciones = {
+        "Cerebro": (350, 100, 28, 20),
+        "Tiroides": (350, 155, 16, 10),
+        "Pulmón": (350, 220, 58, 48),
+        "Mamas": (350, 235, 42, 18),
+        "Médula ósea roja": (350, 290, 14, 90),
+        "Esófago": (350, 215, 10, 60),
+        "Hígado": (385, 292, 38, 23),
+        "Estómago": (330, 312, 28, 23),
+        "Colon": (350, 350, 45, 34),
+        "Vejiga": (350, 410, 22, 18),
+        "Gónadas": (350, 445, 20, 15),
+        "Piel": (350, 285, 82, 190),
+        "Superficie ósea": (350, 285, 58, 165),
+        "Resto de tejidos": (350, 285, 70, 180),
+    }
+
+    col_fig, col_calc = st.columns([1.05, 0.95])
+
+    with col_calc:
+        organo = st.selectbox(
+            "1️⃣ Seleccioná el órgano o tejido",
+            list(factores_tejido.keys()),
+            key="organo_mag_u8",
+        )
+        wt = factores_tejido[organo]
+        st.metric("Factor de ponderación del tejido (wT)", f"{wt:.2f}")
+
+        radiacion = st.selectbox(
+            "2️⃣ Seleccioná el tipo de radiación",
+            [
+                "Fotones / gamma",
+                "Electrones / beta",
+                "Protones",
+                "Partículas alfa",
+                "Neutrones",
+            ],
+            key="radiacion_mag_u8",
+        )
+
+        if radiacion == "Fotones / gamma":
+            wr = 1.0
+        elif radiacion == "Electrones / beta":
+            wr = 1.0
+        elif radiacion == "Protones":
+            wr = 2.0
+        elif radiacion == "Partículas alfa":
+            wr = 20.0
+        else:
+            energia_neutron = st.number_input(
+                "Energía del neutrón (MeV)",
+                min_value=0.001,
+                max_value=10000.0,
+                value=1.0,
+                step=0.1,
+                format="%.3f",
+                key="energia_neutron_u8",
+            )
+            e = float(energia_neutron)
+            if e < 1.0:
+                wr = 2.5 + 18.2 * np.exp(-(np.log(e) ** 2) / 6.0)
+            elif e <= 50.0:
+                wr = 5.0 + 17.0 * np.exp(-(np.log(2.0 * e) ** 2) / 6.0)
+            else:
+                wr = 2.5 + 3.25 * np.exp(-(np.log(0.04 * e) ** 2) / 6.0)
+
+        st.metric("Factor de ponderación de la radiación (wR)", f"{wr:.2f}")
+
+        dosis_mgy = st.number_input(
+            "3️⃣ Dosis absorbida en el órgano (mGy)",
+            min_value=0.0,
+            value=1.0,
+            step=0.1,
+            key="dosis_abs_mag_u8",
+        )
+
+        h_msv = dosis_mgy * wr
+        e_msv = h_msv * wt
+
+        c1, c2 = st.columns(2)
+        with c1:
+            st.metric("Dosis equivalente HT", f"{h_msv:.3f} mSv")
+        with c2:
+            st.metric("Contribución a dosis efectiva E", f"{e_msv:.3f} mSv")
+
+    with col_fig:
+        cx, cy, rx, ry = posiciones[organo]
+
+        if organo in ["Piel", "Superficie ósea", "Resto de tejidos"]:
+            resaltado = f"""
+            <ellipse cx="{cx}" cy="{cy}" rx="{rx}" ry="{ry}"
+            fill="none" stroke="#ffcc4d" stroke-width="8" opacity="0.95"/>
+            """
+        else:
+            resaltado = f"""
+            <ellipse cx="{cx}" cy="{cy}" rx="{rx}" ry="{ry}"
+            fill="#ffcc4d" opacity="0.72" stroke="#ffffff" stroke-width="3"/>
+            """
+
+        svg_cuerpo = f"""
+        <svg viewBox="0 0 700 560" width="100%" height="100%">
+          <rect x="25" y="20" width="650" height="520" rx="28"
+            fill="#101820" stroke="#415264" stroke-width="2"/>
+          <text x="350" y="58" text-anchor="middle" fill="white"
+            font-size="22" font-weight="bold">Selección anatómica</text>
+
+          <circle cx="350" cy="105" r="46" fill="#d6a47e"/>
+          <path d="M285 175 Q350 150 415 175 L438 365
+                   Q420 395 390 385 L382 505 L350 505
+                   L340 385 L310 505 L278 505 L310 385
+                   Q280 395 262 365 Z"
+                fill="#e9eef2" stroke="#9eabb5" stroke-width="4"/>
+
+          <ellipse cx="350" cy="100" rx="27" ry="18" fill="#e5a1a8"/>
+          <rect x="342" y="148" width="16" height="14" rx="5" fill="#e5a1a8"/>
+          <ellipse cx="323" cy="220" rx="25" ry="46" fill="#d85c5c"/>
+          <ellipse cx="377" cy="220" rx="25" ry="46" fill="#d85c5c"/>
+          <rect x="346" y="185" width="8" height="78" rx="4" fill="#d8b07b"/>
+          <ellipse cx="385" cy="292" rx="38" ry="23" fill="#8e3c34"/>
+          <ellipse cx="329" cy="310" rx="27" ry="23" fill="#e7a66f"/>
+          <rect x="315" y="330" width="70" height="55" rx="22"
+            fill="none" stroke="#c89a63" stroke-width="10"/>
+          <ellipse cx="350" cy="406" rx="21" ry="17" fill="#8cc9e8"/>
+          <ellipse cx="338" cy="443" rx="9" ry="12" fill="#e6bd6a"/>
+          <ellipse cx="362" cy="443" rx="9" ry="12" fill="#e6bd6a"/>
+          <line x1="350" y1="178" x2="350" y2="390"
+            stroke="#9ec5df" stroke-width="7" opacity="0.55"/>
+
+          {resaltado}
+
+          <text x="350" y="530" text-anchor="middle" fill="#ffcc4d"
+            font-size="18" font-weight="bold">{organo} · wT = {wt:.2f}</text>
+        </svg>
+        """
+        st.components.v1.html(svg_cuerpo, height=620, scrolling=False)
+
+    st.subheader("🧮 Desarrollo del cálculo")
+    st.latex(r"H_T = \sum_R w_R D_{T,R}")
+    st.latex(
+        rf"H_T = {dosis_mgy:.3f}\,\mathrm{{mGy}} \times {wr:.2f}"
+        rf" = {h_msv:.3f}\,\mathrm{{mSv}}"
+    )
+    st.latex(r"E = \sum_T w_T H_T")
+    st.latex(
+        rf"E = {wt:.2f} \times {h_msv:.3f}\,\mathrm{{mSv}}"
+        rf" = {e_msv:.3f}\,\mathrm{{mSv}}"
+    )
+
+    st.divider()
+    st.subheader("➕ Calculadora de dosis equivalente total")
+
+    exp1, exp2 = st.columns(2)
+    opciones = ["Gamma", "Beta / electrones", "Alfa", "Protones"]
+    wr_simples = {"Gamma": 1.0, "Beta / electrones": 1.0, "Alfa": 20.0, "Protones": 2.0}
+
+    with exp1:
+        tipo1 = st.selectbox("Radiación 1", opciones, key="tipo_exp1_u8")
+        d1 = st.number_input(
+            "Dosis 1 (mGy)", min_value=0.0, value=3.0, step=0.1, key="d1_u8"
+        )
+
+    with exp2:
+        tipo2 = st.selectbox("Radiación 2", opciones, index=1, key="tipo_exp2_u8")
+        d2 = st.number_input(
+            "Dosis 2 (mGy)", min_value=0.0, value=1.0, step=0.1, key="d2_u8"
+        )
+
+    h1 = d1 * wr_simples[tipo1]
+    h2 = d2 * wr_simples[tipo2]
+    htotal = h1 + h2
+
+    a, b, c = st.columns(3)
+    with a:
+        st.metric("Contribución 1", f"{h1:.3f} mSv")
+    with b:
+        st.metric("Contribución 2", f"{h2:.3f} mSv")
+    with c:
+        st.metric("Total", f"{htotal:.3f} mSv")
+
+    st.divider()
+    st.subheader("🧠 Ahora resolvelo vos")
+
+    ejercicio = st.selectbox(
+        "Seleccioná un ejercicio",
+        [
+            "1 mGy alfa vs 1 mGy beta",
+            "3 mGy gamma + 1 mGy beta",
+            "2 mGy gamma + 2 mGy alfa",
+            "1 mGy electrones + 0,5 mGy gamma",
+        ],
+        key="ejercicio_mag_u8",
+    )
+
+    if ejercicio == "1 mGy alfa vs 1 mGy beta":
+        st.write("¿1 mGy de radiación alfa es más dañino al tejido que 1 mGy de radiación beta?")
+        r = st.number_input(
+            "Dosis equivalente para 1 mGy alfa (mSv)",
+            min_value=0.0, value=0.0, step=1.0, key="e1_u8"
+        )
+        if st.button("Comprobar", key="c1_u8"):
+            if abs(r - 20.0) < 0.01:
+                st.success("✅ Correcto: alfa = 20 mSv y beta = 1 mSv.")
+            else:
+                st.warning("Revisá el factor wR de las partículas alfa.")
+
+    elif ejercicio == "3 mGy gamma + 1 mGy beta":
+        st.write("Calcule la dosis equivalente total de 3 mGy gamma + 1 mGy beta.")
+        r = st.number_input(
+            "Resultado (mSv)", min_value=0.0, value=0.0, step=0.5, key="e2_u8"
+        )
+        if st.button("Comprobar", key="c2_u8"):
+            if abs(r - 4.0) < 0.01:
+                st.success("✅ Correcto: 3 mSv + 1 mSv = 4 mSv.")
+            else:
+                st.warning("Sumá las contribuciones equivalentes de ambas radiaciones.")
+
+    elif ejercicio == "2 mGy gamma + 2 mGy alfa":
+        st.write("Calcule la dosis equivalente total de 2 mGy gamma + 2 mGy alfa.")
+        r = st.number_input(
+            "Resultado (mSv)", min_value=0.0, value=0.0, step=1.0, key="e3_u8"
+        )
+        if st.button("Comprobar", key="c3_u8"):
+            if abs(r - 42.0) < 0.01:
+                st.success("✅ Correcto: 2 mSv + 40 mSv = 42 mSv.")
+            else:
+                st.warning("Revisá especialmente el wR de alfa.")
+
+    else:
+        st.write("Calcule la dosis equivalente total de 1 mGy electrones + 0,5 mGy gamma.")
+        r = st.number_input(
+            "Resultado (mSv)", min_value=0.0, value=0.0, step=0.1, key="e4_u8"
+        )
+        if st.button("Comprobar", key="c4_u8"):
+            if abs(r - 1.5) < 0.01:
+                st.success("✅ Correcto: 1 mSv + 0,5 mSv = 1,5 mSv.")
+            else:
+                st.warning("Para fotones y electrones, wR = 1.")
+
