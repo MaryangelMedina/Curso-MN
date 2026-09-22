@@ -297,7 +297,7 @@ with lab_spect:
         st.caption("La figura muestra cualitativamente el efecto geométrico de cada colimador; no representa una adquisición clínica cuantitativa.")
 
     with s3:
-        st.subheader("🔄 Adquisición SPECT: de las proyecciones a la imagen reconstruida")
+        st.subheader("🔄 SPECT de un cabezal: de las proyecciones a la imagen reconstruida")
         st.write(
             "Mové el ángulo del cabezal para recorrer la adquisición. "
             "A medida que aumenta el ángulo se incorporan nuevas proyecciones, "
@@ -305,15 +305,31 @@ with lab_spect:
         )
 
         nproj = st.select_slider(
-            "Número conceptual de proyecciones",
+            "Número de proyecciones adquiridas durante 360°",
             options=[16, 32, 64, 128],
             value=64
         )
-        ang = st.slider("Ángulo adquirido", 0, 360, 0, 5)
+        paso_angular = 360.0 / nproj
+        st.info(
+            f"📐 **Paso angular = 360° / {nproj} = {paso_angular:.3f}°**  ·  "
+            f"Esto significa que se adquieren **{nproj} imágenes planares (proyecciones)** "
+            f"distribuidas a lo largo de 360°."
+        )
+
+        indice_proj = st.slider(
+            "Proyección adquirida",
+            0, nproj, 0, 1,
+            help="Cada paso representa una nueva posición angular del cabezal y una nueva imagen planar."
+        )
+        ang = min(360.0, indice_proj * paso_angular)
+        st.caption(
+            f"Proyección {indice_proj} de {nproj} · posición angular ≈ {ang:.3f}° · "
+            f"paso entre proyecciones = {paso_angular:.3f}°"
+        )
 
         # Fracción conceptual de adquisición completada.
         progreso = min(1.0, ang / 360.0)
-        adquiridas = max(1, round(nproj * progreso)) if ang > 0 else 0
+        adquiridas = indice_proj
 
         # Geometría del cabezal.
         cx, cy, R = 250, 205, 128
@@ -504,6 +520,121 @@ with lab_spect:
         st.caption(
             "Las proyecciones, el sinograma y la reconstrucción son representaciones didácticas generadas en el código "
             "para visualizar el proceso; no corresponden a datos clínicos reales."
+        )
+
+
+        st.divider()
+        st.subheader("🔄🔄 SPECT de doble cabezal: dos proyecciones simultáneas")
+        st.write(
+            "En este modelo didáctico, los dos cabezales están opuestos 180°. "
+            "En cada posición angular se adquieren dos proyecciones simultáneamente: "
+            "una por cada cabezal."
+        )
+
+        nproj_doble = st.select_slider(
+            "Número total de proyecciones deseadas",
+            options=[32, 64, 128],
+            value=64,
+            key="nproj_doble"
+        )
+        posiciones_doble = nproj_doble // 2
+        paso_doble = 360.0 / nproj_doble
+        paso_mecanico = 180.0 / posiciones_doble
+
+        st.info(
+            f"📐 **{nproj_doble} proyecciones totales** = {posiciones_doble} posiciones del sistema × 2 cabezales.  "
+            f"Separación angular equivalente entre proyecciones = **{paso_doble:.3f}°**.  "
+            f"Cada cabezal recorre aproximadamente **180°**."
+        )
+
+        pos_doble = st.slider(
+            "Posición de adquisición del sistema",
+            0, posiciones_doble, 0, 1,
+            key="pos_doble"
+        )
+        ang_a = min(180.0, pos_doble * paso_mecanico)
+        ang_b = (ang_a + 180.0) % 360.0
+        adquiridas_doble = min(nproj_doble, pos_doble * 2)
+        progreso_doble = min(1.0, adquiridas_doble / nproj_doble)
+
+        cx2, cy2, r2 = 365, 205, 132
+        xa = cx2 + r2 * math.cos(math.radians(ang_a))
+        ya = cy2 + r2 * math.sin(math.radians(ang_a))
+        xb = cx2 + r2 * math.cos(math.radians(ang_b))
+        yb = cy2 + r2 * math.sin(math.radians(ang_b))
+
+        html_doble = f"""
+        <div style="background:#0e1720;border:1px solid #29465d;border-radius:22px;
+                    padding:14px;color:white;font-family:Arial">
+        <svg viewBox="0 0 1000 410" width="100%" height="410">
+          <text x="365" y="28" fill="#fff" text-anchor="middle" font-size="21" font-weight="bold">
+            SPECT de doble cabezal · vista superior
+          </text>
+          <text x="805" y="28" fill="#fff" text-anchor="middle" font-size="21" font-weight="bold">
+            Adquisición simultánea
+          </text>
+
+          <rect x="30" y="45" width="665" height="305" rx="16" fill="#09131c" stroke="#29465d"/>
+          <circle cx="{cx2}" cy="{cy2}" r="{r2}" fill="none" stroke="#55778e"
+                  stroke-width="3" stroke-dasharray="7 7"/>
+          <ellipse cx="{cx2}" cy="{cy2}" rx="70" ry="96" fill="#d6a27c"/>
+          <circle cx="{cx2-23}" cy="{cy2-8}" r="13" fill="#ffb703"/>
+          <circle cx="{cx2+27}" cy="{cy2+23}" r="9" fill="#ff7b00"/>
+
+          <g transform="translate({xa:.1f},{ya:.1f}) rotate({ang_a+90:.1f})">
+            <rect x="-56" y="-25" width="112" height="50" rx="8"
+                  fill="#5aa9e6" stroke="#d8f0ff" stroke-width="4"/>
+            <rect x="-47" y="-18" width="94" height="10" rx="3" fill="#8fd3a8"/>
+          </g>
+          <g transform="translate({xb:.1f},{yb:.1f}) rotate({ang_b+90:.1f})">
+            <rect x="-56" y="-25" width="112" height="50" rx="8"
+                  fill="#8b7cf6" stroke="#eeeaff" stroke-width="4"/>
+            <rect x="-47" y="-18" width="94" height="10" rx="3" fill="#8fd3a8"/>
+          </g>
+
+          <line x1="{xa:.1f}" y1="{ya:.1f}" x2="{cx2}" y2="{cy2}"
+                stroke="#ffd166" stroke-width="3" stroke-dasharray="6 5"/>
+          <line x1="{xb:.1f}" y1="{yb:.1f}" x2="{cx2}" y2="{cy2}"
+                stroke="#ffd166" stroke-width="3" stroke-dasharray="6 5"/>
+
+          <text x="365" y="330" fill="#ffd166" text-anchor="middle" font-size="16">
+            Cabezal A: {ang_a:.2f}°  ·  Cabezal B: {ang_b:.2f}°
+          </text>
+
+          <rect x="720" y="58" width="250" height="270" rx="16" fill="#09131c" stroke="#29465d"/>
+          <text x="845" y="95" fill="#5aa9e6" text-anchor="middle" font-size="18">
+            Cabezal A → proyección {min(adquiridas_doble+1,nproj_doble)}
+          </text>
+          <text x="845" y="130" fill="#b7aaff" text-anchor="middle" font-size="18">
+            Cabezal B → proyección {min(adquiridas_doble+2,nproj_doble)}
+          </text>
+          <text x="845" y="185" fill="#fff" text-anchor="middle" font-size="20" font-weight="bold">
+            2 imágenes planares
+          </text>
+          <text x="845" y="214" fill="#fff" text-anchor="middle" font-size="20" font-weight="bold">
+            por posición
+          </text>
+          <text x="845" y="270" fill="#ffd166" text-anchor="middle" font-size="17">
+            {adquiridas_doble} / {nproj_doble} proyecciones
+          </text>
+          <text x="845" y="300" fill="#8bd3ff" text-anchor="middle" font-size="15">
+            progreso: {int(progreso_doble*100)} %
+          </text>
+        </svg>
+        </div>
+        """
+        components.html(html_doble, height=440)
+        st.progress(progreso_doble)
+
+        st.markdown(
+            f"**Comparación:** con un cabezal, una posición angular aporta una proyección. "
+            f"Con dos cabezales opuestos, una posición del sistema aporta dos proyecciones simultáneas. "
+            f"Para este ejemplo de {nproj_doble} proyecciones, el sistema necesita "
+            f"{posiciones_doble} posiciones."
+        )
+        st.caption(
+            "Esquema didáctico con dos cabezales opuestos 180°. La geometría exacta y el arco de adquisición "
+            "pueden variar según el equipo y el protocolo."
         )
 
     with s4:
