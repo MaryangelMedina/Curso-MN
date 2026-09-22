@@ -1082,7 +1082,7 @@ with lab_pet:
         eventos=st.select_slider("Cantidad conceptual de coincidencias acumuladas",
                                  options=[100,500,1000,5000,10000,50000],value=5000)
         metodo_pet=st.radio("Método de reconstrucción PET",
-                            ["Retroproyección conceptual","FBP","Iterativa"],horizontal=True)
+                            ["Retroproyección conceptual","FBP","OSEM (iterativa)"],horizontal=True)
         usar_tof=st.toggle("Agregar información TOF",value=True)
 
         progreso=min(1.0,math.log10(eventos)/math.log10(50000))
@@ -1109,18 +1109,14 @@ with lab_pet:
             proceso="Filtrar los datos → retroproyectar"
             etapa_texto="Primero se filtran los datos para controlar el borroneo y luego se retroproyectan."
         else:
-            it=st.slider("Iteración conceptual PET",1,10,5,key="pet_iter_v2")
+            it=st.slider("Iteración conceptual OSEM",1,10,5,key="pet_iter_v2")
             blur_final=max(.8,6.0-.5*it); streak=max(.03,.30-.025*it)
-            proceso=f"Estimar → comparar → corregir · iteración {it}"
-            etapa_texto="La estimación se compara con los datos medidos; la diferencia se usa para corregir la siguiente estimación."
+            proceso=f"OSEM: estimar → comparar → corregir · iteración {it}"
+            etapa_texto="OSEM (Ordered Subsets Expectation Maximization) es una reconstrucción iterativa: divide los datos en subconjuntos ordenados y actualiza sucesivamente la estimación de la imagen."
 
-        # Artefactos de retroproyección.
-        streaks=[]
-        for k in range(12):
-            aa=math.pi*k/12
-            dx=64*math.cos(aa); dy=64*math.sin(aa)
-            streaks.append(f'<line x1="{1005-dx:.1f}" y1="{170-dy:.1f}" x2="{1005+dx:.1f}" y2="{170+dy:.1f}" stroke="#d66cff" stroke-width="2" opacity="{streak:.2f}"/>')
-        streak_svg="".join(streaks)
+        # El resultado final se representa sin rayos radiales artificiales.
+        # Los artefactos se explican en el panel del proceso, no se dibujan como una estrella sobre la imagen.
+        streak_svg=""
 
         # El panel central cambia según el algoritmo para mostrar ANTES → DURANTE → DESPUÉS.
         if metodo_pet=="Retroproyección conceptual":
@@ -1209,10 +1205,15 @@ with lab_pet:
         components.html(html,height=465)
         st.info(etapa_texto)
 
-        if metodo_pet=="Iterativa":
+        if metodo_pet=="OSEM (iterativa)":
             st.markdown(
-                "**Lectura del ciclo:** empezamos con una estimación → calculamos qué datos produciría → "
-                "la comparamos con las coincidencias medidas → usamos la diferencia para corregir la imagen → repetimos."
+                "**OSEM = Ordered Subsets Expectation Maximization.** Es una variante acelerada de MLEM. "
+                "Divide los datos adquiridos en subconjuntos (*subsets*) y actualiza la estimación con cada subconjunto: "
+                "**estimación → proyección calculada → comparación con los datos medidos → corrección → nueva estimación**."
+            )
+            st.info(
+                "📌 **La nomenclatura no cambia por ser PET o SPECT:** FBP, MLEM y OSEM se utilizan en ambas modalidades. "
+                "Lo que cambia es el modelo de adquisición y las correcciones que el algoritmo incorpora."
             )
 
         st.markdown("#### PET + CT: anatomía + función")
@@ -1239,3 +1240,4 @@ with lab_pet:
 
 st.divider()
 st.caption("Simulación conceptual educativa basada en el material de clase. No reproduce parámetros clínicos ni controles operativos de un equipo real.")
+
