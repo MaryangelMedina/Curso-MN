@@ -324,22 +324,6 @@ with lab_spect:
             st.session_state.spect_single_play = False
         st.session_state.spect_single_idx = min(st.session_state.spect_single_idx, nproj)
 
-        cplay, cpause, cprev, cnext, crestart = st.columns(5)
-        if cplay.button("▶️ Play", key="spect_play", use_container_width=True):
-            st.session_state.spect_single_play = True
-            st.session_state.spect_double_play = False
-        if cpause.button("⏸️ Pausa", key="spect_pause", use_container_width=True):
-            st.session_state.spect_single_play = False
-        if cprev.button("⏮️ Atrás", key="spect_prev", use_container_width=True):
-            st.session_state.spect_single_play = False
-            st.session_state.spect_single_idx = max(0, st.session_state.spect_single_idx - 1)
-        if cnext.button("⏭️ Avanzar", key="spect_next", use_container_width=True):
-            st.session_state.spect_single_play = False
-            st.session_state.spect_single_idx = min(nproj, st.session_state.spect_single_idx + 1)
-        if crestart.button("↩️ Inicio", key="spect_restart", use_container_width=True):
-            st.session_state.spect_single_play = False
-            st.session_state.spect_single_idx = 0
-
         indice_proj = st.slider(
             "Proyección adquirida",
             0, nproj, key="spect_single_idx", step=1,
@@ -348,12 +332,86 @@ with lab_spect:
         ang = min(360.0, indice_proj * paso_angular)
 
         m1,m2,m3 = st.columns(3)
-        m1.metric("Proyección", f"{indice_proj} / {nproj}")
-        m2.metric("Ángulo actual", f"{ang:.3f}°")
+        m1.metric("Proyección manual", f"{indice_proj} / {nproj}")
+        m2.metric("Ángulo manual", f"{ang:.3f}°")
         m3.metric("Paso angular", f"{paso_angular:.3f}°")
-        st.caption(
-            "▶️ Play recorre automáticamente la adquisición. ⏸️ Pausa permite detenerla y continuar luego manualmente."
-        )
+        st.caption("La barra sigue disponible para explorar manualmente cada proyección.")
+
+        st.markdown("#### ▶️ Reproducción automática de la rotación")
+        auto_html = f"""
+        <div id="spectAuto" style="background:#0e1720;border:1px solid #29465d;border-radius:18px;padding:12px;color:white;font-family:Arial,sans-serif">
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+            <button id="spPlay" style="padding:8px 16px">▶️ Play</button>
+            <button id="spPause" style="padding:8px 16px">⏸️ Pausa</button>
+            <button id="spPrev" style="padding:8px 16px">⏮️ Atrás</button>
+            <button id="spNext" style="padding:8px 16px">⏭️ Avanzar</button>
+            <button id="spReset" style="padding:8px 16px">↩️ Inicio</button>
+          </div>
+          <div style="display:flex;gap:18px;flex-wrap:wrap;margin-bottom:8px;font-size:16px">
+            <b>Proyección: <span id="spProj">0</span> / {nproj}</b>
+            <b>Ángulo: <span id="spAng">0.000</span>°</b>
+            <b>Paso: {paso_angular:.3f}°</b>
+          </div>
+          <svg viewBox="0 0 760 390" width="100%" style="display:block">
+            <rect x="10" y="10" width="740" height="365" rx="16" fill="#071019"/>
+            <text x="380" y="38" fill="white" text-anchor="middle" font-size="20">Rotación automática SPECT · un cabezal</text>
+            <circle cx="310" cy="195" r="118" fill="none" stroke="#29485d" stroke-width="3" stroke-dasharray="5 5"/>
+            <ellipse cx="310" cy="195" rx="58" ry="82" fill="#d7a37d"/>
+            <ellipse cx="292" cy="188" rx="15" ry="23" fill="#35c4b8" opacity=".8"/>
+            <ellipse cx="332" cy="207" rx="18" ry="25" fill="#ff9f1c" opacity=".8"/>
+            <line id="spRay" x1="310" y1="195" x2="428" y2="195" stroke="#ffd166" stroke-width="3"/>
+            <g id="spHead" transform="translate(428 195) rotate(90)">
+              <rect x="-48" y="-22" width="96" height="44" rx="7" fill="#7b61a8"/>
+              <rect x="-39" y="-14" width="78" height="8" fill="#7ef29a"/>
+              <text x="0" y="5" fill="white" text-anchor="middle" font-size="12">CÁMARA</text>
+            </g>
+            <rect x="500" y="92" width="205" height="205" rx="14" fill="#101c26" stroke="#29465d"/>
+            <text x="602" y="120" fill="white" text-anchor="middle" font-size="16">Imagen planar actual</text>
+            <ellipse id="spPlanar1" cx="602" cy="190" rx="34" ry="63" fill="#bbb" opacity=".75"/>
+            <ellipse id="spPlanar2" cx="602" cy="195" rx="15" ry="35" fill="#eee" opacity=".8"/>
+            <text x="602" y="330" fill="#8bd3ff" text-anchor="middle" font-size="14">El cabezal avanza una proyección por paso</text>
+          </svg>
+        </div>
+        <script>
+        (function(){{
+          const root=document.getElementById("spectAuto");
+          if(!root || root.dataset.ready==="1") return;
+          root.dataset.ready="1";
+          const N={nproj}, step=360/N, cx=310, cy=195, R=118;
+          let i=0, timer=null;
+          const head=root.querySelector("#spHead"), ray=root.querySelector("#spRay");
+          const proj=root.querySelector("#spProj"), ang=root.querySelector("#spAng");
+          const p1=root.querySelector("#spPlanar1"), p2=root.querySelector("#spPlanar2");
+          function draw(){{
+            const a=Math.min(i,N)*step;
+            const rad=a*Math.PI/180;
+            const x=cx+R*Math.cos(rad), y=cy+R*Math.sin(rad);
+            head.setAttribute("transform",`translate(${{x}} ${{y}}) rotate(${{a+90}})`);
+            ray.setAttribute("x2",x); ray.setAttribute("y2",y);
+            proj.textContent=i; ang.textContent=a.toFixed(3);
+            const squash=0.72+0.28*Math.abs(Math.cos(rad));
+            p1.setAttribute("rx",(34*squash).toFixed(1));
+            p2.setAttribute("cx",(602+18*Math.sin(rad)).toFixed(1));
+          }}
+          function stop(){{ if(timer){{clearInterval(timer);timer=null;}} }}
+          function play(){{
+            if(i>=N) i=0;
+            stop();
+            timer=setInterval(()=>{{
+              if(i>=N){{stop();return;}}
+              i++; draw();
+            }},350);
+          }}
+          root.querySelector("#spPlay").addEventListener("click",play);
+          root.querySelector("#spPause").addEventListener("click",stop);
+          root.querySelector("#spPrev").addEventListener("click",()=>{{stop();i=Math.max(0,i-1);draw();}});
+          root.querySelector("#spNext").addEventListener("click",()=>{{stop();i=Math.min(N,i+1);draw();}});
+          root.querySelector("#spReset").addEventListener("click",()=>{{stop();i=0;draw();}});
+          draw();
+        }})();
+        </script>
+        """
+        components.html(auto_html, height=500)
 
         # Fracción conceptual de adquisición completada.
         progreso = min(1.0, ang / 360.0)
@@ -802,23 +860,6 @@ with lab_spect:
             "Esquema didáctico con dos cabezales opuestos 180°. La geometría exacta y el arco de adquisición "
             "pueden variar según el equipo y el protocolo."
         )
-
-        # Motor de reproducción automática. Conserva siempre la posibilidad de control manual.
-        if st.session_state.get("spect_single_play", False):
-            if st.session_state.spect_single_idx < nproj:
-                time.sleep(0.35)
-                st.session_state.spect_single_idx += 1
-                st.rerun()
-            else:
-                st.session_state.spect_single_play = False
-
-        if st.session_state.get("spect_double_play", False):
-            if st.session_state.spect_double_idx < posiciones_doble:
-                time.sleep(0.35)
-                st.session_state.spect_double_idx += 1
-                st.rerun()
-            else:
-                st.session_state.spect_double_play = False
 
     with s4:
         st.subheader("🧩 Reconstrucción SPECT: mirá qué hace cada método")
@@ -1314,3 +1355,4 @@ with lab_pet:
 
 st.divider()
 st.caption("Simulación conceptual educativa basada en el material de clase. No reproduce parámetros clínicos ni controles operativos de un equipo real.")
+
