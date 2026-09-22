@@ -352,24 +352,24 @@ with lab_spect:
             <b>Ángulo: <span id="spAng">0.000</span>°</b>
             <b>Paso: {paso_angular:.3f}°</b>
           </div>
-          <svg viewBox="0 0 1050 560" width="100%" style="display:block;overflow:hidden">
-            <rect x="20" y="20" width="1010" height="510" rx="16" fill="#071019"/>
+          <svg viewBox="0 0 1050 500" width="100%" style="display:block;overflow:hidden">
+            <rect x="20" y="15" width="1010" height="455" rx="16" fill="#071019"/>
             <text x="525" y="42" fill="white" text-anchor="middle" font-size="18">Rotación automática SPECT · un cabezal</text><text x="525" y="65" fill="#8bd3ff" text-anchor="middle" font-size="13">Simulación automática de adquisición</text>
-            <circle cx="300" cy="245" r="105" fill="none" stroke="#29485d" stroke-width="3" stroke-dasharray="5 5"/>
-            <ellipse cx="300" cy="245" rx="43" ry="62" fill="#d7a37d"/>
-            <ellipse cx="287" cy="240" rx="11" ry="17" fill="#35c4b8" opacity=".8"/>
-            <ellipse cx="317" cy="254" rx="13" ry="19" fill="#ff9f1c" opacity=".8"/>
-            <line id="spRay" x1="300" y1="245" x2="405" y2="245" stroke="#ffd166" stroke-width="2.5"/>
-            <g id="spHead" transform="translate(405 245) rotate(90)">
+            <circle cx="300" cy="225" r="92" fill="none" stroke="#29485d" stroke-width="3" stroke-dasharray="5 5"/>
+            <ellipse cx="300" cy="225" rx="39" ry="55" fill="#d7a37d"/>
+            <ellipse cx="288" cy="220" rx="10" ry="15" fill="#35c4b8" opacity=".8"/>
+            <ellipse cx="316" cy="233" rx="12" ry="17" fill="#ff9f1c" opacity=".8"/>
+            <line id="spRay" x1="300" y1="225" x2="392" y2="225" stroke="#ffd166" stroke-width="2.5"/>
+            <g id="spHead" transform="translate(392 225) rotate(90)">
               <rect x="-34" y="-16" width="68" height="32" rx="6" fill="#7b61a8"/>
               <rect x="-28" y="-10" width="56" height="6" fill="#7ef29a"/>
               <text x="0" y="4" fill="white" text-anchor="middle" font-size="10">CÁMARA</text>
             </g>
-            <rect x="575" y="90" width="360" height="310" rx="14" fill="#101c26" stroke="#29465d"/>
-            <text x="755" y="125" fill="white" text-anchor="middle" font-size="16">Imagen planar actual</text>
-            <ellipse id="spPlanar1" cx="755" cy="240" rx="34" ry="58" fill="#bbb" opacity=".75"/>
-            <ellipse id="spPlanar2" cx="755" cy="245" rx="15" ry="32" fill="#eee" opacity=".8"/>
-            <text x="755" y="370" fill="#8bd3ff" text-anchor="middle" font-size="13">El cabezal avanza una proyección por paso</text>
+            <rect x="575" y="85" width="360" height="285" rx="14" fill="#101c26" stroke="#29465d"/>
+            <text x="755" y="120" fill="white" text-anchor="middle" font-size="16">Imagen planar actual</text>
+            <ellipse id="spPlanar1" cx="755" cy="220" rx="31" ry="52" fill="#bbb" opacity=".75"/>
+            <ellipse id="spPlanar2" cx="755" cy="225" rx="14" ry="29" fill="#eee" opacity=".8"/>
+            <text x="755" y="345" fill="#8bd3ff" text-anchor="middle" font-size="13">El cabezal avanza una proyección por paso</text>
           </svg>
         </div>
         <script>
@@ -377,7 +377,7 @@ with lab_spect:
           const root=document.getElementById("spectAuto");
           if(!root || root.dataset.ready==="1") return;
           root.dataset.ready="1";
-          const N={nproj}, step=360/N, cx=300, cy=245, R=105;
+          const N={nproj}, step=360/N, cx=300, cy=225, R=92;
           let i=0, timer=null;
           const head=root.querySelector("#spHead"), ray=root.querySelector("#spRay");
           const proj=root.querySelector("#spProj"), ang=root.querySelector("#spAng");
@@ -411,7 +411,7 @@ with lab_spect:
         }})();
         </script>
         """
-        components.html(auto_html, height=485)
+        components.html(auto_html, height=545)
 
         # Fracción conceptual de adquisición completada.
         progreso = min(1.0, ang / 360.0)
@@ -672,36 +672,36 @@ with lab_spect:
             <b>Cabezal A: <span id="sdAngA">0.000</span>°</b>
             <b>Cabezal B: <span id="sdAngB">180.000</span>°</b>
           </div>
-          <svg viewBox="0 0 900 410" width="100%" style="display:block;overflow:hidden">
-            <rect x="10" y="10" width="880" height="385" rx="16" fill="#071019"/>
+          <svg viewBox="0 0 900 365" width="100%" style="display:block;overflow:hidden">
+            <rect x="10" y="10" width="880" height="335" rx="16" fill="#071019"/>
             <text x="450" y="38" fill="white" text-anchor="middle" font-size="18">Rotación automática SPECT · doble cabezal</text>
             <text x="450" y="60" fill="#8bd3ff" text-anchor="middle" font-size="13">Los dos cabezales permanecen opuestos 180° y giran simultáneamente</text>
 
-            <circle cx="330" cy="225" r="105" fill="none" stroke="#29485d" stroke-width="3" stroke-dasharray="5 5"/>
-            <ellipse cx="330" cy="225" rx="43" ry="62" fill="#d7a37d"/>
-            <ellipse cx="317" cy="220" rx="11" ry="17" fill="#35c4b8" opacity=".8"/>
-            <ellipse cx="347" cy="234" rx="13" ry="19" fill="#ff9f1c" opacity=".8"/>
+            <circle cx="330" cy="205" r="88" fill="none" stroke="#29485d" stroke-width="3" stroke-dasharray="5 5"/>
+            <ellipse cx="330" cy="205" rx="38" ry="54" fill="#d7a37d"/>
+            <ellipse cx="318" cy="200" rx="10" ry="15" fill="#35c4b8" opacity=".8"/>
+            <ellipse cx="345" cy="213" rx="12" ry="17" fill="#ff9f1c" opacity=".8"/>
 
-            <line id="sdRayA" x1="330" y1="225" x2="435" y2="225" stroke="#ffd166" stroke-width="2.5"/>
-            <line id="sdRayB" x1="330" y1="225" x2="225" y2="225" stroke="#ffd166" stroke-width="2.5"/>
+            <line id="sdRayA" x1="330" y1="205" x2="418" y2="205" stroke="#ffd166" stroke-width="2.5"/>
+            <line id="sdRayB" x1="330" y1="205" x2="242" y2="205" stroke="#ffd166" stroke-width="2.5"/>
 
-            <g id="sdHeadA" transform="translate(435 225) rotate(90)">
+            <g id="sdHeadA" transform="translate(418 205) rotate(90)">
               <rect x="-34" y="-16" width="68" height="32" rx="6" fill="#7b61a8"/>
               <rect x="-28" y="-10" width="56" height="6" fill="#7ef29a"/>
               <text x="0" y="4" fill="white" text-anchor="middle" font-size="10">A</text>
             </g>
-            <g id="sdHeadB" transform="translate(225 225) rotate(270)">
+            <g id="sdHeadB" transform="translate(242 205) rotate(270)">
               <rect x="-34" y="-16" width="68" height="32" rx="6" fill="#5577a8"/>
               <rect x="-28" y="-10" width="56" height="6" fill="#7ef29a"/>
               <text x="0" y="4" fill="white" text-anchor="middle" font-size="10">B</text>
             </g>
 
-            <rect x="535" y="100" width="285" height="245" rx="14" fill="#101c26" stroke="#29465d"/>
-            <text x="677" y="130" fill="white" text-anchor="middle" font-size="16">Proyecciones simultáneas</text>
-            <ellipse id="sdPlanA" cx="635" cy="220" rx="27" ry="51" fill="#bbb" opacity=".75"/>
-            <ellipse id="sdPlanB" cx="720" cy="220" rx="27" ry="51" fill="#888" opacity=".75"/>
-            <text x="635" y="295" fill="#ddd" text-anchor="middle" font-size="13">Cabezal A</text>
-            <text x="720" y="295" fill="#ddd" text-anchor="middle" font-size="13">Cabezal B</text>
+            <rect x="535" y="85" width="285" height="225" rx="14" fill="#101c26" stroke="#29465d"/>
+            <text x="677" y="115" fill="white" text-anchor="middle" font-size="16">Proyecciones simultáneas</text>
+            <ellipse id="sdPlanA" cx="635" cy="195" rx="25" ry="45" fill="#bbb" opacity=".75"/>
+            <ellipse id="sdPlanB" cx="720" cy="195" rx="25" ry="45" fill="#888" opacity=".75"/>
+            <text x="635" y="270" fill="#ddd" text-anchor="middle" font-size="13">Cabezal A</text>
+            <text x="720" y="270" fill="#ddd" text-anchor="middle" font-size="13">Cabezal B</text>
           </svg>
         </div>
         <script>
@@ -709,7 +709,7 @@ with lab_spect:
           const root=document.getElementById("spectDoubleAuto");
           if(!root || root.dataset.ready==="1") return;
           root.dataset.ready="1";
-          const P={posiciones_doble}, total={nproj_doble}, step=180/P, cx=330, cy=225, R=105;
+          const P={posiciones_doble}, total={nproj_doble}, step=180/P, cx=330, cy=205, R=88;
           let i=0, timer=null;
           const hA=root.querySelector("#sdHeadA"), hB=root.querySelector("#sdHeadB");
           const rA=root.querySelector("#sdRayA"), rB=root.querySelector("#sdRayB");
@@ -747,7 +747,7 @@ with lab_spect:
         }})();
         </script>
         """
-        components.html(double_auto_html, height=485)
+        components.html(double_auto_html, height=455)
 
         # Geometría compacta: ambos cabezales permanecen dentro del primer recuadro.
         cx2, cy2, r2 = 225, 205, 102
