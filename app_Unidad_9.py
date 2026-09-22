@@ -1,6 +1,7 @@
 import streamlit as st
 import streamlit.components.v1 as components
 import math
+import time
 
 st.set_page_config(page_title="Unidad 9 - SPECT y PET", page_icon="☢️", layout="wide")
 
@@ -316,15 +317,42 @@ with lab_spect:
             f"distribuidas a lo largo de 360°."
         )
 
+        # Controles manuales + reproducción automática.
+        if "spect_single_idx" not in st.session_state:
+            st.session_state.spect_single_idx = 0
+        if "spect_single_play" not in st.session_state:
+            st.session_state.spect_single_play = False
+        st.session_state.spect_single_idx = min(st.session_state.spect_single_idx, nproj)
+
+        cplay, cpause, cprev, cnext, crestart = st.columns(5)
+        if cplay.button("▶️ Play", key="spect_play", use_container_width=True):
+            st.session_state.spect_single_play = True
+            st.session_state.spect_double_play = False
+        if cpause.button("⏸️ Pausa", key="spect_pause", use_container_width=True):
+            st.session_state.spect_single_play = False
+        if cprev.button("⏮️ Atrás", key="spect_prev", use_container_width=True):
+            st.session_state.spect_single_play = False
+            st.session_state.spect_single_idx = max(0, st.session_state.spect_single_idx - 1)
+        if cnext.button("⏭️ Avanzar", key="spect_next", use_container_width=True):
+            st.session_state.spect_single_play = False
+            st.session_state.spect_single_idx = min(nproj, st.session_state.spect_single_idx + 1)
+        if crestart.button("↩️ Inicio", key="spect_restart", use_container_width=True):
+            st.session_state.spect_single_play = False
+            st.session_state.spect_single_idx = 0
+
         indice_proj = st.slider(
             "Proyección adquirida",
-            0, nproj, 0, 1,
-            help="Cada paso representa una nueva posición angular del cabezal y una nueva imagen planar."
+            0, nproj, key="spect_single_idx", step=1,
+            help="También podés mover manualmente la barra. Cada paso representa una nueva posición angular y una nueva imagen planar."
         )
         ang = min(360.0, indice_proj * paso_angular)
+
+        m1,m2,m3 = st.columns(3)
+        m1.metric("Proyección", f"{indice_proj} / {nproj}")
+        m2.metric("Ángulo actual", f"{ang:.3f}°")
+        m3.metric("Paso angular", f"{paso_angular:.3f}°")
         st.caption(
-            f"Proyección {indice_proj} de {nproj} · posición angular ≈ {ang:.3f}° · "
-            f"paso entre proyecciones = {paso_angular:.3f}°"
+            "▶️ Play recorre automáticamente la adquisición. ⏸️ Pausa permite detenerla y continuar luego manualmente."
         )
 
         # Fracción conceptual de adquisición completada.
@@ -547,15 +575,44 @@ with lab_spect:
             f"Cada cabezal recorre aproximadamente **180°**."
         )
 
+        if "spect_double_idx" not in st.session_state:
+            st.session_state.spect_double_idx = 0
+        if "spect_double_play" not in st.session_state:
+            st.session_state.spect_double_play = False
+        st.session_state.spect_double_idx = min(st.session_state.spect_double_idx, posiciones_doble)
+
+        dplay, dpause, dprev, dnext, drestart = st.columns(5)
+        if dplay.button("▶️ Play", key="spect_dplay", use_container_width=True):
+            st.session_state.spect_double_play = True
+            st.session_state.spect_single_play = False
+        if dpause.button("⏸️ Pausa", key="spect_dpause", use_container_width=True):
+            st.session_state.spect_double_play = False
+        if dprev.button("⏮️ Atrás", key="spect_dprev", use_container_width=True):
+            st.session_state.spect_double_play = False
+            st.session_state.spect_double_idx = max(0, st.session_state.spect_double_idx - 1)
+        if dnext.button("⏭️ Avanzar", key="spect_dnext", use_container_width=True):
+            st.session_state.spect_double_play = False
+            st.session_state.spect_double_idx = min(posiciones_doble, st.session_state.spect_double_idx + 1)
+        if drestart.button("↩️ Inicio", key="spect_drestart", use_container_width=True):
+            st.session_state.spect_double_play = False
+            st.session_state.spect_double_idx = 0
+
         pos_doble = st.slider(
             "Posición de adquisición del sistema",
-            0, posiciones_doble, 0, 1,
-            key="pos_doble"
+            0, posiciones_doble, key="spect_double_idx", step=1,
+            help="Podés reproducir automáticamente o recorrer manualmente cada posición del sistema."
         )
         ang_a = min(180.0, pos_doble * paso_mecanico)
         ang_b = (ang_a + 180.0) % 360.0
         adquiridas_doble = min(nproj_doble, pos_doble * 2)
         progreso_doble = min(1.0, adquiridas_doble / nproj_doble)
+
+        dm1,dm2,dm3,dm4 = st.columns(4)
+        dm1.metric("Posición", f"{pos_doble} / {posiciones_doble}")
+        dm2.metric("Proyecciones", f"{adquiridas_doble} / {nproj_doble}")
+        dm3.metric("Cabezal A", f"{ang_a:.3f}°")
+        dm4.metric("Cabezal B", f"{ang_b:.3f}°")
+        st.caption(f"Paso angular equivalente entre proyecciones: {paso_doble:.3f}°")
 
         # Geometría compacta: ambos cabezales permanecen dentro del primer recuadro.
         cx2, cy2, r2 = 225, 205, 102
@@ -745,6 +802,23 @@ with lab_spect:
             "Esquema didáctico con dos cabezales opuestos 180°. La geometría exacta y el arco de adquisición "
             "pueden variar según el equipo y el protocolo."
         )
+
+        # Motor de reproducción automática. Conserva siempre la posibilidad de control manual.
+        if st.session_state.get("spect_single_play", False):
+            if st.session_state.spect_single_idx < nproj:
+                time.sleep(0.35)
+                st.session_state.spect_single_idx += 1
+                st.rerun()
+            else:
+                st.session_state.spect_single_play = False
+
+        if st.session_state.get("spect_double_play", False):
+            if st.session_state.spect_double_idx < posiciones_doble:
+                time.sleep(0.35)
+                st.session_state.spect_double_idx += 1
+                st.rerun()
+            else:
+                st.session_state.spect_double_play = False
 
     with s4:
         st.subheader("🧩 Reconstrucción SPECT: mirá qué hace cada método")
@@ -1240,4 +1314,3 @@ with lab_pet:
 
 st.divider()
 st.caption("Simulación conceptual educativa basada en el material de clase. No reproduce parámetros clínicos ni controles operativos de un equipo real.")
-
