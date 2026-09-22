@@ -965,17 +965,26 @@ with lab_pet:
         cc.warning("**Limitación principal**\n\n" + d["contra"])
         st.info("**Robustez / manejo del material:** " + d["rob"])
 
+        st.markdown("#### ⏱️ ¿Qué significa TOF?")
+        st.info(
+            "**TOF = Time of Flight (tiempo de vuelo).** En una coincidencia PET, los dos fotones de 511 keV "
+            "llegan a los detectores con una pequeñísima diferencia temporal. TOF utiliza esa diferencia para "
+            "estimar en qué zona de la LOR ocurrió con mayor probabilidad la aniquilación. No elimina la LOR: "
+            "agrega información de localización a lo largo de ella y mejora la relación señal/ruido de la reconstrucción."
+        )
+        st.markdown("**Cristales rápidos + mucha luz + fotodetectores rápidos (especialmente SiPM) → mejor resolución temporal → mejor aprovechamiento de TOF.**")
+
         st.markdown("#### 📊 Comparación rápida de cristales PET")
         st.markdown("""
-| Cristal | Fórmula | Densidad (g/cm³) | Luz aprox. (fot/MeV) | Decaimiento | Robustez / higroscopicidad | Lectura didáctica |
-|---|---|---:|---:|---:|---|---|
-| **NaI(Tl)** | NaI:Tl | 3.67 | 38 000 | 230 ns | Higroscópico | Mucha luz, pero bajo poder de frenado para 511 keV |
-| **BGO** | Bi₄Ge₃O₁₂ | 7.13 | 9 000 | 300 ns | No higroscópico | Muy denso, pero lento y con poca luz |
-| **GSO:Ce** | Gd₂SiO₅:Ce | ~6.7 | 13 000 | 50–65 ns | No higroscópico | Más rápido que BGO |
-| **LSO:Ce** | Lu₂SiO₅:Ce | ~7.4 | 26–31 000 | ~40 ns | No higroscópico | Denso + rápido; muy apto para TOF |
-| **LYSO:Ce** | (Lu,Y)₂SiO₅:Ce | ~7.1 | 30–32 000 | ~40 ns | No higroscópico | Gran equilibrio; muy usado actualmente |
-| **LaBr₃:Ce** | LaBr₃:Ce | ~5.3 | ~60 000 | 15–25 ns | Higroscópico | Muy rápido y luminoso, menor stopping power |
-| **GAGG:Ce** | Gd₃(Al,Ga)₅O₁₂:Ce | ~6.6 | 46–58 000 | variable | No higroscópico | Material emergente con alta luz |
+| Cristal | Densidad | Decaimiento | Robustez | ¿Qué ventaja aporta en PET? | TOF |
+|---|---:|---:|---|---|---|
+| **NaI(Tl)** | 3.67 g/cm³ | ~230 ns | Higroscópico | Mucha luz y buena resolución energética, pero menor eficiencia de detección a 511 keV | Poco favorable |
+| **BGO** | 7.13 g/cm³ | ~300 ns | Robusto, no higroscópico | **Muy alto poder de frenado** → buena eficiencia/sensibilidad para 511 keV | Limitado por su respuesta lenta |
+| **GSO:Ce** | ~6.7 g/cm³ | ~50–65 ns | No higroscópico | Más rápido que BGO y con buena densidad; favorece mayores tasas de conteo | Mejor que BGO, no es el estándar TOF actual |
+| **LSO:Ce** | ~7.4 g/cm³ | ~40 ns | Robusto, no higroscópico | **Alta densidad + buena luz + rapidez** → sensibilidad, altas tasas y buena temporización | **Muy favorable** |
+| **LYSO:Ce** | ~7.1 g/cm³ | ~40 ns | Robusto, no higroscópico | Excelente equilibrio entre stopping power, luz y rapidez; ampliamente usado en PET moderno | **Muy favorable** |
+| **LaBr₃:Ce** | ~5.3 g/cm³ | ~15–25 ns | Higroscópico | Muchísima luz, gran resolución energética y respuesta muy rápida | Excelente temporización, pero menor stopping power |
+| **GAGG:Ce** | ~6.6 g/cm³ | variable | No higroscópico | Alta luz y buena densidad; interesante para nuevos diseños | Potencial / investigación |
         """)
 
         st.caption(
@@ -1064,17 +1073,107 @@ with lab_pet:
         )
 
     with p5:
-        st.subheader("🧠 De muchas coincidencias a la imagen PET")
-        eventos = st.select_slider("Cantidad conceptual de eventos", options=[100,1000,10000,100000], value=10000)
-        metodo = st.radio("Reconstrucción", ["FBP","Iterativa","Deep Learning (mencionado en la presentación)"], horizontal=True)
-        c1,c2 = st.columns(2)
-        c1.metric("Eventos", f"{eventos:,}".replace(",","."))
-        c2.metric("Reconstrucción", metodo)
+        st.subheader("🧠 Reconstrucción PET: de las coincidencias a la imagen")
+        st.write(
+            "Igual que en el laboratorio SPECT, seguí visualmente el camino de los datos. "
+            "En PET no usamos un colimador físico: muchas coincidencias definen LOR y esas LOR alimentan la reconstrucción."
+        )
 
-        st.markdown("### PET + CT")
-        fusion = st.slider("Fusión conceptual CT ↔ PET", 0, 100, 50)
+        eventos = st.select_slider("Cantidad conceptual de coincidencias acumuladas",
+                                   options=[100,500,1000,5000,10000,50000], value=5000)
+        metodo_pet = st.radio("Reconstrucción PET",
+                              ["Retroproyección conceptual","FBP","Iterativa"],
+                              horizontal=True)
+        usar_tof = st.toggle("Agregar información TOF", value=True)
+
+        progreso_pet = min(1.0, math.log10(eventos)/math.log10(50000))
+        n_lor = max(4, min(30, int(4 + progreso_pet*26)))
+        lors=[]
+        for k in range(n_lor):
+            aa=math.pi*k/n_lor + 0.17*math.sin(k*1.7)
+            off=24*math.sin(k*2.1)
+            x1=190+145*math.cos(aa)-off*math.sin(aa)
+            y1=190+145*math.sin(aa)+off*math.cos(aa)
+            x2=190-145*math.cos(aa)-off*math.sin(aa)
+            y2=190-145*math.sin(aa)+off*math.cos(aa)
+            op=0.18+0.45*progreso_pet
+            lors.append(f'<line x1="{x1:.1f}" y1="{y1:.1f}" x2="{x2:.1f}" y2="{y2:.1f}" stroke="#ffd166" stroke-width="2" opacity="{op:.2f}"/>')
+            if usar_tof:
+                mx=(x1+x2)/2 + 25*math.sin(k)
+                my=(y1+y2)/2 + 18*math.cos(k*1.3)
+                lors.append(f'<circle cx="{mx:.1f}" cy="{my:.1f}" r="4" fill="#7ef29a" opacity=".75"/>')
+        lors_svg="".join(lors)
+
+        if metodo_pet=="Retroproyección conceptual":
+            blur_pet=7.0; streak_pet=.40
+            proceso_pet="Retroproyectar LOR"
+        elif metodo_pet=="FBP":
+            blur_pet=3.2; streak_pet=.16
+            proceso_pet="Filtrar → retroproyectar"
+        else:
+            iter_pet=st.slider("Iteraciones conceptuales PET",1,10,5,key="pet_iter")
+            blur_pet=max(.8,5.0-.42*iter_pet); streak_pet=max(.03,.25-.02*iter_pet)
+            proceso_pet=f"Estimar → comparar → corregir · iteración {iter_pet}"
+
+        streaks=[]
+        for k in range(11):
+            aa=math.pi*k/11
+            dx=72*math.cos(aa); dy=72*math.sin(aa)
+            streaks.append(f'<line x1="{895-dx:.1f}" y1="{180-dy:.1f}" x2="{895+dx:.1f}" y2="{180+dy:.1f}" stroke="#d66cff" stroke-width="2" opacity="{streak_pet:.2f}"/>')
+        streak_svg="".join(streaks)
+
+        tof_label="TOF: localización adicional sobre la LOR" if usar_tof else "Sin TOF: la coincidencia aporta la LOR"
+        html_pet=f"""
+        <div style="background:#0e1720;border:1px solid #29465d;border-radius:20px;padding:12px">
+        <svg viewBox="0 0 1120 410" width="100%" height="410">
+          <defs><filter id="petblur"><feGaussianBlur stdDeviation="{blur_pet:.2f}"/></filter></defs>
+          <text x="190" y="28" fill="white" text-anchor="middle" font-size="20" font-weight="bold">Coincidencias / LOR</text>
+          <text x="495" y="28" fill="white" text-anchor="middle" font-size="20" font-weight="bold">Datos PET</text>
+          <text x="700" y="28" fill="white" text-anchor="middle" font-size="20" font-weight="bold">Reconstrucción</text>
+          <text x="895" y="28" fill="white" text-anchor="middle" font-size="20" font-weight="bold">Imagen PET</text>
+
+          <rect x="25" y="50" width="330" height="270" rx="15" fill="#071019" stroke="#29465d"/>
+          <circle cx="190" cy="190" r="145" fill="none" stroke="#29485d" stroke-width="18"/>
+          <ellipse cx="190" cy="190" rx="72" ry="95" fill="#243746"/>
+          {lors_svg}
+          <circle cx="170" cy="178" r="8" fill="#ff4d6d"/>
+          <text x="190" y="348" fill="#8bd3ff" text-anchor="middle" font-size="14">{tof_label}</text>
+
+          <rect x="380" y="50" width="225" height="270" rx="15" fill="#071019" stroke="#29465d"/>
+          <path d="M405 265 C435 85,485 85,575 260" fill="none" stroke="#eee" stroke-width="10" opacity=".78"/>
+          <path d="M405 105 C460 270,520 255,575 105" fill="none" stroke="#999" stroke-width="7" opacity=".6"/>
+          <path d="M410 210 C465 120,520 120,575 215" fill="none" stroke="#7ef29a" stroke-width="5" opacity="{'.75' if usar_tof else '.15'}"/>
+          <text x="492" y="348" fill="#8bd3ff" text-anchor="middle" font-size="14">eventos organizados para reconstruir</text>
+
+          <rect x="630" y="50" width="170" height="270" rx="15" fill="#071019" stroke="#29465d"/>
+          <text x="715" y="145" fill="#ffd166" text-anchor="middle" font-size="14">{proceso_pet}</text>
+          <text x="715" y="195" fill="white" text-anchor="middle" font-size="38">→</text>
+          <text x="715" y="245" fill="#c9d6df" text-anchor="middle" font-size="14">{eventos:,} eventos</text>
+
+          <rect x="825" y="50" width="270" height="270" rx="15" fill="#020508" stroke="#29465d"/>
+          {streak_svg}
+          <g filter="url(#petblur)" opacity="{0.40+0.60*progreso_pet:.2f}">
+            <ellipse cx="895" cy="180" rx="72" ry="84" fill="#3b1465"/>
+            <ellipse cx="895" cy="180" rx="60" ry="70" fill="#1769aa"/>
+            <ellipse cx="872" cy="173" rx="22" ry="31" fill="#35c4b8"/>
+            <ellipse cx="925" cy="190" rx="27" ry="35" fill="#ff9f1c"/>
+            <ellipse cx="925" cy="190" rx="14" ry="20" fill="#ff3b30"/>
+            <ellipse cx="895" cy="145" rx="12" ry="19" fill="#b7e75f"/>
+          </g>
+          <text x="895" y="348" fill="#ffd166" text-anchor="middle" font-size="14">definición conceptual: {int(progreso_pet*100)}%</text>
+          <text x="560" y="392" fill="#8bd3ff" text-anchor="middle" font-size="16">
+            COINCIDENCIAS → LOR → DATOS → RECONSTRUCCIÓN → IMAGEN PET
+          </text>
+        </svg></div>"""
+        components.html(html_pet,height=440)
+
+        st.markdown("#### PET + CT: ¿qué aporta cada imagen?")
+        fusion=st.slider("Fusión conceptual CT ↔ PET",0,100,50,key="fusion_pet")
+        c1,c2=st.columns(2)
+        c1.info("**CT:** referencia anatómica.")
+        c2.success("**PET:** distribución funcional/metabólica del trazador.")
         st.progress(fusion/100)
-        st.caption("CT aporta referencia anatómica y PET representa la distribución funcional/metabólica del trazador.")
+        st.caption("TOF no crea una imagen anatómica: mejora la información temporal usada en la reconstrucción PET.")
 
     with p6:
         st.subheader("🧠 Comprobá lo aprendido")
