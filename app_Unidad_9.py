@@ -352,24 +352,24 @@ with lab_spect:
             <b>Ángulo: <span id="spAng">0.000</span>°</b>
             <b>Paso: {paso_angular:.3f}°</b>
           </div>
-          <svg viewBox="0 0 760 390" width="100%" style="display:block">
-            <rect x="10" y="10" width="740" height="365" rx="16" fill="#071019"/>
-            <text x="380" y="38" fill="white" text-anchor="middle" font-size="20">Rotación automática SPECT · un cabezal</text>
-            <circle cx="310" cy="195" r="118" fill="none" stroke="#29485d" stroke-width="3" stroke-dasharray="5 5"/>
-            <ellipse cx="310" cy="195" rx="58" ry="82" fill="#d7a37d"/>
-            <ellipse cx="292" cy="188" rx="15" ry="23" fill="#35c4b8" opacity=".8"/>
-            <ellipse cx="332" cy="207" rx="18" ry="25" fill="#ff9f1c" opacity=".8"/>
-            <line id="spRay" x1="310" y1="195" x2="428" y2="195" stroke="#ffd166" stroke-width="3"/>
-            <g id="spHead" transform="translate(428 195) rotate(90)">
-              <rect x="-48" y="-22" width="96" height="44" rx="7" fill="#7b61a8"/>
-              <rect x="-39" y="-14" width="78" height="8" fill="#7ef29a"/>
+          <svg viewBox="0 0 900 460" width="100%" style="display:block;overflow:visible">
+            <rect x="10" y="10" width="880" height="435" rx="16" fill="#071019"/>
+            <text x="450" y="42" fill="white" text-anchor="middle" font-size="20">Rotación automática SPECT · un cabezal</text>
+            <circle cx="300" cy="235" r="135" fill="none" stroke="#29485d" stroke-width="3" stroke-dasharray="5 5"/>
+            <ellipse cx="300" cy="235" rx="58" ry="82" fill="#d7a37d"/>
+            <ellipse cx="282" cy="228" rx="15" ry="23" fill="#35c4b8" opacity=".8"/>
+            <ellipse cx="322" cy="247" rx="18" ry="25" fill="#ff9f1c" opacity=".8"/>
+            <line id="spRay" x1="300" y1="235" x2="435" y2="235" stroke="#ffd166" stroke-width="3"/>
+            <g id="spHead" transform="translate(435 235) rotate(90)">
+              <rect x="-42" y="-20" width="84" height="40" rx="7" fill="#7b61a8"/>
+              <rect x="-34" y="-13" width="68" height="7" fill="#7ef29a"/>
               <text x="0" y="5" fill="white" text-anchor="middle" font-size="12">CÁMARA</text>
             </g>
-            <rect x="500" y="92" width="205" height="205" rx="14" fill="#101c26" stroke="#29465d"/>
-            <text x="602" y="120" fill="white" text-anchor="middle" font-size="16">Imagen planar actual</text>
-            <ellipse id="spPlanar1" cx="602" cy="190" rx="34" ry="63" fill="#bbb" opacity=".75"/>
-            <ellipse id="spPlanar2" cx="602" cy="195" rx="15" ry="35" fill="#eee" opacity=".8"/>
-            <text x="602" y="330" fill="#8bd3ff" text-anchor="middle" font-size="14">El cabezal avanza una proyección por paso</text>
+            <rect x="555" y="105" width="285" height="255" rx="14" fill="#101c26" stroke="#29465d"/>
+            <text x="697" y="138" fill="white" text-anchor="middle" font-size="17">Imagen planar actual</text>
+            <ellipse id="spPlanar1" cx="697" cy="230" rx="42" ry="72" fill="#bbb" opacity=".75"/>
+            <ellipse id="spPlanar2" cx="697" cy="235" rx="18" ry="40" fill="#eee" opacity=".8"/>
+            <text x="697" y="390" fill="#8bd3ff" text-anchor="middle" font-size="14">El cabezal avanza una proyección por paso</text>
           </svg>
         </div>
         <script>
@@ -377,7 +377,7 @@ with lab_spect:
           const root=document.getElementById("spectAuto");
           if(!root || root.dataset.ready==="1") return;
           root.dataset.ready="1";
-          const N={nproj}, step=360/N, cx=310, cy=195, R=118;
+          const N={nproj}, step=360/N, cx=300, cy=235, R=135;
           let i=0, timer=null;
           const head=root.querySelector("#spHead"), ray=root.querySelector("#spRay");
           const proj=root.querySelector("#spProj"), ang=root.querySelector("#spAng");
@@ -391,7 +391,7 @@ with lab_spect:
             proj.textContent=i; ang.textContent=a.toFixed(3);
             const squash=0.72+0.28*Math.abs(Math.cos(rad));
             p1.setAttribute("rx",(34*squash).toFixed(1));
-            p2.setAttribute("cx",(602+18*Math.sin(rad)).toFixed(1));
+            p2.setAttribute("cx",(697+22*Math.sin(rad)).toFixed(1));
           }}
           function stop(){{ if(timer){{clearInterval(timer);timer=null;}} }}
           function play(){{
@@ -411,7 +411,7 @@ with lab_spect:
         }})();
         </script>
         """
-        components.html(auto_html, height=500)
+        components.html(auto_html, height=590)
 
         # Fracción conceptual de adquisición completada.
         progreso = min(1.0, ang / 360.0)
@@ -1355,4 +1355,3 @@ with lab_pet:
 
 st.divider()
 st.caption("Simulación conceptual educativa basada en el material de clase. No reproduce parámetros clínicos ni controles operativos de un equipo real.")
-
