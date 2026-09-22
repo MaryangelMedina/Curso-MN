@@ -557,7 +557,8 @@ with lab_spect:
         adquiridas_doble = min(nproj_doble, pos_doble * 2)
         progreso_doble = min(1.0, adquiridas_doble / nproj_doble)
 
-        cx2, cy2, r2 = 365, 205, 132
+        # Geometría compacta: ambos cabezales permanecen dentro del primer recuadro.
+        cx2, cy2, r2 = 225, 205, 102
         xa = cx2 + r2 * math.cos(math.radians(ang_a))
         ya = cy2 + r2 * math.sin(math.radians(ang_a))
         xb = cx2 + r2 * math.cos(math.radians(ang_b))
@@ -613,7 +614,7 @@ with lab_spect:
         html_doble = f"""
         <div style="background:#0e1720;border:1px solid #29465d;border-radius:22px;
                     padding:14px;color:white;font-family:Arial">
-        <svg viewBox="0 0 1220 430" width="100%" height="430">
+        <svg viewBox="0 0 1220 430" width="100%" height="430" style="overflow:hidden">
           <defs>
             <filter id="blurRecD">
               <feGaussianBlur stdDeviation="{blur_doble:.2f}"/>
@@ -640,19 +641,19 @@ with lab_spect:
           <rect x="20" y="45" width="410" height="305" rx="16" fill="#09131c" stroke="#29465d"/>
           <circle cx="{cx2}" cy="{cy2}" r="{r2}" fill="none" stroke="#55778e"
                   stroke-width="3" stroke-dasharray="7 7"/>
-          <ellipse cx="{cx2}" cy="{cy2}" rx="70" ry="96" fill="#d6a27c"/>
+          <ellipse cx="{cx2}" cy="{cy2}" rx="54" ry="74" fill="#d6a27c"/>
           <circle cx="{cx2-23}" cy="{cy2-8}" r="13" fill="#ffb703"/>
           <circle cx="{cx2+27}" cy="{cy2+23}" r="9" fill="#ff7b00"/>
 
           <g transform="translate({xa:.1f},{ya:.1f}) rotate({ang_a+90:.1f})">
-            <rect x="-56" y="-25" width="112" height="50" rx="8"
+            <rect x="-40" y="-19" width="80" height="38" rx="8"
                   fill="#5aa9e6" stroke="#d8f0ff" stroke-width="4"/>
-            <rect x="-47" y="-18" width="94" height="10" rx="3" fill="#8fd3a8"/>
+            <rect x="-33" y="-13" width="66" height="8" rx="3" fill="#8fd3a8"/>
           </g>
           <g transform="translate({xb:.1f},{yb:.1f}) rotate({ang_b+90:.1f})">
-            <rect x="-56" y="-25" width="112" height="50" rx="8"
+            <rect x="-40" y="-19" width="80" height="38" rx="8"
                   fill="#8b7cf6" stroke="#eeeaff" stroke-width="4"/>
-            <rect x="-47" y="-18" width="94" height="10" rx="3" fill="#8fd3a8"/>
+            <rect x="-33" y="-13" width="66" height="8" rx="3" fill="#8fd3a8"/>
           </g>
           <line x1="{xa:.1f}" y1="{ya:.1f}" x2="{cx2}" y2="{cy2}"
                 stroke="#ffd166" stroke-width="3" stroke-dasharray="6 5"/>
