@@ -297,34 +297,214 @@ with lab_spect:
         st.caption("La figura muestra cualitativamente el efecto geométrico de cada colimador; no representa una adquisición clínica cuantitativa.")
 
     with s3:
-        st.subheader("🔄 Adquisición SPECT alrededor del paciente")
-        nproj = st.select_slider("Número conceptual de proyecciones", options=[8,16,32,64,128], value=64)
-        ang = st.slider("Ángulo del cabezal", 0, 359, 0)
+        st.subheader("🔄 Adquisición SPECT: de las proyecciones a la imagen reconstruida")
+        st.write(
+            "Mové el ángulo del cabezal para recorrer la adquisición. "
+            "A medida que aumenta el ángulo se incorporan nuevas proyecciones, "
+            "se completa el sinograma y la reconstrucción se vuelve progresivamente más definida."
+        )
 
-        cx,cy,R = 360,205,145
-        x = cx + R*math.cos(math.radians(ang))
-        y = cy + R*math.sin(math.radians(ang))
+        nproj = st.select_slider(
+            "Número conceptual de proyecciones",
+            options=[16, 32, 64, 128],
+            value=64
+        )
+        ang = st.slider("Ángulo adquirido", 0, 360, 0, 5)
+
+        # Fracción conceptual de adquisición completada.
+        progreso = min(1.0, ang / 360.0)
+        adquiridas = max(1, round(nproj * progreso)) if ang > 0 else 0
+
+        # Geometría del cabezal.
+        cx, cy, R = 250, 205, 128
+        x = cx + R * math.cos(math.radians(ang))
+        y = cy + R * math.sin(math.radians(ang))
+
+        # Perfil planar conceptual: dos focos cuya posición relativa cambia con el ángulo.
+        rad = math.radians(ang)
+        foco1 = 115 + 38 * math.cos(rad)
+        foco2 = 115 - 27 * math.sin(rad)
+        foco3 = 115 + 18 * math.cos(rad + 1.4)
+
+        # Filas del sinograma ya adquiridas.
+        filas_sino = []
+        filas_totales = 42
+        filas_visibles = round(filas_totales * progreso)
+        for k in range(filas_totales):
+            yy = 62 + k * 5.2
+            fase = 2 * math.pi * k / filas_totales
+            xx1 = 760 + 70 * math.sin(fase)
+            xx2 = 760 + 42 * math.sin(fase + 1.7)
+            op = 0.85 if k < filas_visibles else 0.08
+            filas_sino.append(
+                f'<circle cx="{xx1:.1f}" cy="{yy:.1f}" r="7" fill="#f6f6f6" opacity="{op}"/>'
+                f'<circle cx="{xx2:.1f}" cy="{yy:.1f}" r="5" fill="#bfc9d2" opacity="{op*0.75:.2f}"/>'
+            )
+        sino_svg = "".join(filas_sino)
+
+        # Reconstrucción conceptual progresiva.
+        # Con pocas proyecciones se hacen visibles líneas radiales tipo streak.
+        streaks = []
+        n_streak = 14 if nproj == 16 else (9 if nproj == 32 else (5 if nproj == 64 else 2))
+        streak_opacity = max(0.05, (1.0 - progreso) * 0.55 + (0.22 if nproj == 16 else 0.05))
+        for k in range(n_streak):
+            a = math.pi * k / max(1, n_streak)
+            dx = 82 * math.cos(a)
+            dy = 82 * math.sin(a)
+            streaks.append(
+                f'<line x1="{1015-dx:.1f}" y1="{185-dy:.1f}" '
+                f'x2="{1015+dx:.1f}" y2="{185+dy:.1f}" '
+                f'stroke="#d66cff" stroke-width="2" opacity="{streak_opacity:.2f}"/>'
+            )
+        streak_svg = "".join(streaks)
+
+        # A mayor progreso, mayor definición y menor transparencia de los focos.
+        op_img = 0.18 + 0.82 * progreso
+        blur = max(1.0, 8.0 * (1.0 - progreso) + (2.8 if nproj == 16 else 0.8))
+        pct = int(progreso * 100)
 
         html = f"""
-        <div style="background:#0e1720;border-radius:20px">
-        <svg viewBox="0 0 720 420" width="100%" height="420">
-          <text x="360" y="30" fill="white" text-anchor="middle" font-size="25">Adquisición SPECT - {ang} grados</text>
-          <ellipse cx="{cx}" cy="{cy}" rx="75" ry="105" fill="#d7a37d"/>
-          <circle cx="{cx-20}" cy="{cy}" r="13" fill="#ffb703"/>
-          <circle cx="{cx}" cy="{cy}" r="{R}" fill="none" stroke="#526b7d" stroke-width="3" stroke-dasharray="7 7"/>
-          <g transform="translate({x},{y}) rotate({ang+90})">
-            <rect x="-62" y="-27" width="124" height="54" rx="8" fill="#5aa9e6" stroke="#d8f0ff" stroke-width="4"/>
-          </g>
-          <line x1="{x}" y1="{y}" x2="{cx}" y2="{cy}" stroke="#ffd166" stroke-width="3" stroke-dasharray="5 5"/>
-          <text x="360" y="390" fill="#ffd166" text-anchor="middle" font-size="20">{nproj} proyecciones</text>
-        </svg></div>
-        """
-        components.html(html, height=450)
+        <div style="background:#0e1720;border:1px solid #29465d;border-radius:22px;
+                    padding:14px;color:white;font-family:Arial">
+        <svg viewBox="0 0 1200 430" width="100%" height="430">
+          <defs>
+            <filter id="blurRec">
+              <feGaussianBlur stdDeviation="{blur:.2f}"/>
+            </filter>
+            <filter id="blurProj">
+              <feGaussianBlur stdDeviation="5"/>
+            </filter>
+          </defs>
 
-        if nproj <= 16:
-            st.warning("Pocas proyecciones: puede aumentar el artefacto tipo estrella (streak).")
+          <!-- títulos -->
+          <text x="250" y="28" fill="#ffffff" text-anchor="middle" font-size="21" font-weight="bold">
+            Sistema SPECT · vista superior
+          </text>
+          <text x="540" y="28" fill="#ffffff" text-anchor="middle" font-size="21" font-weight="bold">
+            Proyección actual · {ang}°
+          </text>
+          <text x="760" y="28" fill="#ffffff" text-anchor="middle" font-size="21" font-weight="bold">
+            Sinograma
+          </text>
+          <text x="1015" y="28" fill="#ffffff" text-anchor="middle" font-size="21" font-weight="bold">
+            Reconstrucción transaxial
+          </text>
+
+          <!-- PANEL 1: paciente + cabezal -->
+          <rect x="25" y="42" width="450" height="315" rx="16" fill="#09131c" stroke="#29465d"/>
+          <circle cx="{cx}" cy="{cy}" r="{R}" fill="none" stroke="#55778e" stroke-width="3" stroke-dasharray="7 7"/>
+          <ellipse cx="{cx}" cy="{cy}" rx="72" ry="98" fill="#d6a27c"/>
+          <ellipse cx="{cx}" cy="{cy}" rx="52" ry="70" fill="#8f6c5a" opacity=".42"/>
+          <circle cx="{cx-22}" cy="{cy-5}" r="13" fill="#ffb703"/>
+          <circle cx="{cx+26}" cy="{cy+22}" r="9" fill="#ff7b00"/>
+          <g transform="translate({x:.1f},{y:.1f}) rotate({ang+90})">
+            <rect x="-54" y="-25" width="108" height="50" rx="8"
+                  fill="#5aa9e6" stroke="#d8f0ff" stroke-width="4"/>
+            <rect x="-46" y="-18" width="92" height="10" rx="3" fill="#8fd3a8"/>
+          </g>
+          <line x1="{x:.1f}" y1="{y:.1f}" x2="{cx}" y2="{cy}"
+                stroke="#ffd166" stroke-width="3" stroke-dasharray="6 5"/>
+          <text x="250" y="337" fill="#ffd166" text-anchor="middle" font-size="17">
+            Cabezal actual: {ang}°
+          </text>
+
+          <!-- PANEL 2: proyección planar conceptual -->
+          <rect x="490" y="42" width="175" height="315" rx="16" fill="#09131c" stroke="#29465d"/>
+          <rect x="515" y="68" width="125" height="225" rx="8" fill="#020508"/>
+          <g filter="url(#blurProj)">
+            <ellipse cx="577" cy="{foco1:.1f}" rx="24" ry="37" fill="#f4f4f4" opacity=".62"/>
+            <ellipse cx="558" cy="{foco2+80:.1f}" rx="15" ry="25" fill="#d8d8d8" opacity=".45"/>
+            <ellipse cx="596" cy="{foco3+105:.1f}" rx="12" ry="19" fill="#ffffff" opacity=".55"/>
+          </g>
+          <text x="577" y="320" fill="#c9d6df" text-anchor="middle" font-size="14">
+            Imagen planar adquirida
+          </text>
+
+          <!-- PANEL 3: sinograma conceptual -->
+          <rect x="680" y="42" width="185" height="315" rx="16" fill="#09131c" stroke="#29465d"/>
+          <rect x="700" y="60" width="120" height="225" rx="5" fill="#020508"/>
+          {sino_svg}
+          <line x1="700" y1="{62 + filas_visibles*5.2:.1f}" x2="820" y2="{62 + filas_visibles*5.2:.1f}"
+                stroke="#ff4d5a" stroke-width="3" opacity="{1 if ang>0 else 0}"/>
+          <text x="760" y="310" fill="#c9d6df" text-anchor="middle" font-size="14">
+            {adquiridas} / {nproj} proyecciones
+          </text>
+          <text x="760" y="334" fill="#8bd3ff" text-anchor="middle" font-size="14">
+            Se completa con cada ángulo
+          </text>
+
+          <!-- PANEL 4: reconstrucción progresiva -->
+          <rect x="880" y="42" width="295" height="315" rx="16" fill="#09131c" stroke="#29465d"/>
+          <rect x="918" y="67" width="194" height="218" rx="8" fill="#020508"/>
+          {streak_svg}
+          <g filter="url(#blurRec)" opacity="{op_img:.2f}">
+            <ellipse cx="1015" cy="176" rx="78" ry="86" fill="#4b1677"/>
+            <ellipse cx="1015" cy="176" rx="65" ry="72" fill="#1c67b1"/>
+            <ellipse cx="986" cy="168" rx="23" ry="32" fill="#35c4b8"/>
+            <ellipse cx="1048" cy="184" rx="27" ry="36" fill="#ff9f1c"/>
+            <ellipse cx="1048" cy="184" rx="15" ry="21" fill="#ff3b30"/>
+            <ellipse cx="1015" cy="142" rx="13" ry="21" fill="#b7e75f"/>
+          </g>
+          <text x="1015" y="310" fill="#ffd166" text-anchor="middle" font-size="15">
+            Reconstrucción acumulada: {pct} %
+          </text>
+          <text x="1015" y="334" fill="#c9d6df" text-anchor="middle" font-size="14">
+            {"Adquisición completa" if ang >= 360 else "Imagen aún incompleta"}
+          </text>
+
+          <!-- flujo inferior -->
+          <line x1="465" y1="385" x2="1135" y2="385" stroke="#35576f" stroke-width="2"/>
+          <text x="800" y="414" fill="#8bd3ff" text-anchor="middle" font-size="17">
+            Proyección angular → sinograma → reconstrucción progresiva
+          </text>
+        </svg>
+        </div>
+        """
+        components.html(html, height=475)
+
+        st.progress(progreso)
+        if ang == 0:
+            st.info("Inicio de la adquisición: todavía no se ha completado ninguna proyección del recorrido.")
+        elif ang < 360:
+            st.info(
+                f"Adquisición en curso: aproximadamente {adquiridas} de {nproj} proyecciones. "
+                "Seguí moviendo el ángulo para observar cómo se completa el sinograma y mejora la reconstrucción."
+            )
         else:
-            st.success("Un mayor muestreo angular reduce el artefacto asociado a un número insuficiente de proyecciones.")
+            st.success(
+                f"Adquisición completa: {nproj} proyecciones alrededor de 360°. "
+                "La imagen de la derecha representa el corte transaxial reconstruido final."
+            )
+
+        st.markdown("#### 🎞️ Proyecciones adquiridas")
+        if adquiridas == 0:
+            st.caption("Mové el ángulo para comenzar a adquirir proyecciones.")
+        else:
+            # Filmstrip conceptual de hasta 12 mini-proyecciones.
+            mostrar = min(adquiridas, 12)
+            cols = st.columns(mostrar)
+            for k in range(mostrar):
+                a_k = round((360 / nproj) * k)
+                cols[k].markdown(
+                    f"<div style='background:#111d29;border:1px solid #35576f;border-radius:8px;"
+                    f"text-align:center;padding:8px 2px;font-size:12px'>"
+                    f"<div style='height:36px;margin:auto;width:22px;border-radius:50%;"
+                    f"background:radial-gradient(circle,#eee 0%,#888 35%,#111 75%)'></div>"
+                    f"{a_k}°</div>",
+                    unsafe_allow_html=True
+                )
+
+        if nproj == 16:
+            st.warning("Con 16 proyecciones, la reconstrucción final conserva artefactos tipo estrella (streak) por submuestreo angular.")
+        elif nproj == 32:
+            st.warning("Con 32 proyecciones mejora el muestreo, aunque todavía pueden observarse artefactos por número limitado de proyecciones.")
+        else:
+            st.success("Al aumentar el número de proyecciones mejora el muestreo angular y disminuyen los artefactos asociados al submuestreo.")
+
+        st.caption(
+            "Las proyecciones, el sinograma y la reconstrucción son representaciones didácticas generadas en el código "
+            "para visualizar el proceso; no corresponden a datos clínicos reales."
+        )
 
     with s4:
         st.subheader("🧩 De las proyecciones al corte transversal")
