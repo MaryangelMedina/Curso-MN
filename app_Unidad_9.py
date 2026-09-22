@@ -183,14 +183,43 @@ with lab_spect:
                 <circle cx="520" cy="180" r="6" fill="#111820" stroke="#d7e1e8" stroke-width="2"/>
             """
 
-        # La distancia modifica visualmente la nitidez del paralelo.
-        desenfoque = min(5.0, 0.45 * distancia) if tipo == "Agujeros paralelos" else 0.7
+        # El slider representa de forma conceptual la distancia objeto-colimador.
+        # Se usa una variable normalizada para que el alumno visualice tendencias geométricas.
+        d_norm = (distancia - 1) / 9.0  # 0 = cerca, 1 = lejos
+
+        if tipo == "Agujeros paralelos":
+            # El tamaño se conserva aproximadamente; al alejarse empeora la resolución.
+            escala = 1.0
+            desenfoque = 0.6 + 4.2 * d_norm
+            relacion_distancia = "Más lejos → menor nitidez / peor resolución espacial"
+        elif tipo == "Convergente":
+            # Representación didáctica: cerca = mayor magnificación; lejos = menor magnificación.
+            escala = 1.65 - 0.55 * d_norm
+            desenfoque = 0.6 + 1.4 * d_norm
+            relacion_distancia = "Más cerca → mayor magnificación; más lejos → menor magnificación"
+        elif tipo == "Divergente":
+            # La reducción cambia con la geometría/distancia.
+            escala = 0.55 + 0.25 * d_norm
+            desenfoque = 0.6 + 1.2 * d_norm
+            relacion_distancia = "La distancia modifica el grado de reducción de la imagen"
+        else:
+            # Pinhole: M=b/a. Al aumentar a (objeto más lejos), disminuye la magnificación.
+            escala = 1.75 - 0.85 * d_norm
+            desenfoque = 0.55 + 1.2 * d_norm
+            relacion_distancia = "Pinhole: al acercar el objeto aumenta la magnificación; al alejarlo disminuye"
+
         rx_img = 42 * escala
         ry_img = 58 * escala
 
-        # Marcador asimétrico: en pinhole cambia de arriba a abajo para mostrar la inversión.
+        # Marcador asimétrico: permite ver claramente la inversión del pinhole.
         punto_y_obj = 152
         punto_y_img = 180 + (180 - punto_y_obj) * escala if invertir else 180 + (punto_y_obj - 180) * escala
+
+        estado_distancia = "MUY CERCA" if distancia <= 3 else ("INTERMEDIA" if distancia <= 7 else "MUY LEJOS")
+
+        # El objeto también se desplaza visualmente hacia/desde el colimador.
+        # Distancia 1 = próximo al colimador; distancia 10 = más alejado.
+        objeto_x = 300 - 17 * distancia
 
         html = f"""
         <div style="background:#0e1720;border:1px solid #29465d;border-radius:22px;padding:16px;color:white;font-family:Arial">
@@ -204,9 +233,9 @@ with lab_spect:
           <text x="590" y="32" fill="white" text-anchor="middle" font-size="25" font-weight="bold">{tipo}</text>
 
           <!-- Objeto/fuente -->
-          <ellipse cx="145" cy="180" rx="48" ry="66" fill="#ff9f68" stroke="#ffc89f" stroke-width="2"/>
-          <circle cx="145" cy="{punto_y_obj}" r="12" fill="#ffcf33"/>
-          <text x="145" y="285" fill="white" text-anchor="middle" font-size="18">Objeto / fuente</text>
+          <ellipse cx="{objeto_x}" cy="180" rx="48" ry="66" fill="#ff9f68" stroke="#ffc89f" stroke-width="2"/>
+          <circle cx="{objeto_x}" cy="{punto_y_obj}" r="12" fill="#ffcf33"/>
+          <text x="{objeto_x}" y="285" fill="white" text-anchor="middle" font-size="18">Objeto / fuente</text>
 
           <!-- Rayos y colimador -->
           <g stroke="#ffd166" stroke-width="3">{rayos}</g>
@@ -232,12 +261,20 @@ with lab_spect:
             <circle cx="962" cy="{punto_y_img}" r="{max(7, 11*escala)}" fill="#ffd42a"/>
           </g>
 
-          <text x="962" y="338" fill="#ffd166" text-anchor="middle" font-size="18">{etiqueta_imagen}</text>
-          <text x="962" y="365" fill="#c9d6df" text-anchor="middle" font-size="15">Representación conceptual de la proyección</text>
+          <text x="962" y="330" fill="#ffd166" text-anchor="middle" font-size="18">{etiqueta_imagen}</text>
+          <text x="962" y="354" fill="#c9d6df" text-anchor="middle" font-size="15">Escala visual ≈ {escala:.2f}×</text>
+
+          <text x="{objeto_x}" y="345" fill="#8bd3ff" text-anchor="middle" font-size="16">Objeto: {estado_distancia}</text>
+          <text x="590" y="385" fill="#c9d6df" text-anchor="middle" font-size="15">{relacion_distancia}</text>
         </svg>
         </div>
         """
         components.html(html, height=450)
+
+        st.markdown(f"**Qué está pasando:** {relacion_distancia}.")
+        if tipo == "Pinhole":
+            st.latex(r"M = \\frac{b}{a}")
+            st.caption("En el modelo pinhole, a representa la distancia objeto-pinhole y b la distancia pinhole-detector. El dibujo mantiene b fija y modifica conceptualmente a con el slider.")
 
         c1, c2, c3 = st.columns(3)
         if tipo == "Agujeros paralelos":
