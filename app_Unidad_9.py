@@ -1075,105 +1075,153 @@ with lab_pet:
     with p5:
         st.subheader("🧠 Reconstrucción PET: de las coincidencias a la imagen")
         st.write(
-            "Igual que en el laboratorio SPECT, seguí visualmente el camino de los datos. "
-            "En PET no usamos un colimador físico: muchas coincidencias definen LOR y esas LOR alimentan la reconstrucción."
+            "Seguí el proceso completo: las coincidencias forman LOR, los datos se organizan "
+            "y el algoritmo genera una estimación de la distribución del trazador."
         )
 
-        eventos = st.select_slider("Cantidad conceptual de coincidencias acumuladas",
-                                   options=[100,500,1000,5000,10000,50000], value=5000)
-        metodo_pet = st.radio("Reconstrucción PET",
-                              ["Retroproyección conceptual","FBP","Iterativa"],
-                              horizontal=True)
-        usar_tof = st.toggle("Agregar información TOF", value=True)
+        eventos=st.select_slider("Cantidad conceptual de coincidencias acumuladas",
+                                 options=[100,500,1000,5000,10000,50000],value=5000)
+        metodo_pet=st.radio("Método de reconstrucción PET",
+                            ["Retroproyección conceptual","FBP","Iterativa"],horizontal=True)
+        usar_tof=st.toggle("Agregar información TOF",value=True)
 
-        progreso_pet = min(1.0, math.log10(eventos)/math.log10(50000))
-        n_lor = max(4, min(30, int(4 + progreso_pet*26)))
+        progreso=min(1.0,math.log10(eventos)/math.log10(50000))
+        n_lor=max(5,min(28,int(5+23*progreso)))
         lors=[]
         for k in range(n_lor):
-            aa=math.pi*k/n_lor + 0.17*math.sin(k*1.7)
-            off=24*math.sin(k*2.1)
-            x1=190+145*math.cos(aa)-off*math.sin(aa)
-            y1=190+145*math.sin(aa)+off*math.cos(aa)
-            x2=190-145*math.cos(aa)-off*math.sin(aa)
-            y2=190-145*math.sin(aa)+off*math.cos(aa)
-            op=0.18+0.45*progreso_pet
-            lors.append(f'<line x1="{x1:.1f}" y1="{y1:.1f}" x2="{x2:.1f}" y2="{y2:.1f}" stroke="#ffd166" stroke-width="2" opacity="{op:.2f}"/>')
+            aa=math.pi*k/n_lor+0.15*math.sin(k*1.7)
+            off=22*math.sin(k*2.1)
+            x1=165+125*math.cos(aa)-off*math.sin(aa); y1=170+125*math.sin(aa)+off*math.cos(aa)
+            x2=165-125*math.cos(aa)-off*math.sin(aa); y2=170-125*math.sin(aa)+off*math.cos(aa)
+            lors.append(f'<line x1="{x1:.1f}" y1="{y1:.1f}" x2="{x2:.1f}" y2="{y2:.1f}" stroke="#ffd166" stroke-width="1.8" opacity=".42"/>')
             if usar_tof:
-                mx=(x1+x2)/2 + 25*math.sin(k)
-                my=(y1+y2)/2 + 18*math.cos(k*1.3)
-                lors.append(f'<circle cx="{mx:.1f}" cy="{my:.1f}" r="4" fill="#7ef29a" opacity=".75"/>')
+                mx=(x1+x2)/2+22*math.sin(k); my=(y1+y2)/2+16*math.cos(k*1.3)
+                lors.append(f'<circle cx="{mx:.1f}" cy="{my:.1f}" r="3.5" fill="#7ef29a" opacity=".78"/>')
         lors_svg="".join(lors)
 
+        # Parámetros visuales de la imagen final.
         if metodo_pet=="Retroproyección conceptual":
-            blur_pet=7.0; streak_pet=.40
-            proceso_pet="Retroproyectar LOR"
+            blur_final=7.0; streak=.42; proceso="Retroproyectar las LOR"
+            etapa_texto="Las LOR se distribuyen sobre la matriz; aparece borroneo y artefactos."
         elif metodo_pet=="FBP":
-            blur_pet=3.2; streak_pet=.16
-            proceso_pet="Filtrar → retroproyectar"
+            filtro=st.slider("Frecuencia de corte conceptual PET",20,100,65,5,key="pet_fbp_cut")
+            blur_final=max(1.3,5.5-filtro/24); streak=.15
+            proceso="Filtrar los datos → retroproyectar"
+            etapa_texto="Primero se filtran los datos para controlar el borroneo y luego se retroproyectan."
         else:
-            iter_pet=st.slider("Iteraciones conceptuales PET",1,10,5,key="pet_iter")
-            blur_pet=max(.8,5.0-.42*iter_pet); streak_pet=max(.03,.25-.02*iter_pet)
-            proceso_pet=f"Estimar → comparar → corregir · iteración {iter_pet}"
+            it=st.slider("Iteración conceptual PET",1,10,5,key="pet_iter_v2")
+            blur_final=max(.8,6.0-.5*it); streak=max(.03,.30-.025*it)
+            proceso=f"Estimar → comparar → corregir · iteración {it}"
+            etapa_texto="La estimación se compara con los datos medidos; la diferencia se usa para corregir la siguiente estimación."
 
+        # Artefactos de retroproyección.
         streaks=[]
-        for k in range(11):
-            aa=math.pi*k/11
-            dx=72*math.cos(aa); dy=72*math.sin(aa)
-            streaks.append(f'<line x1="{895-dx:.1f}" y1="{180-dy:.1f}" x2="{895+dx:.1f}" y2="{180+dy:.1f}" stroke="#d66cff" stroke-width="2" opacity="{streak_pet:.2f}"/>')
+        for k in range(12):
+            aa=math.pi*k/12
+            dx=64*math.cos(aa); dy=64*math.sin(aa)
+            streaks.append(f'<line x1="{1005-dx:.1f}" y1="{170-dy:.1f}" x2="{1005+dx:.1f}" y2="{170+dy:.1f}" stroke="#d66cff" stroke-width="2" opacity="{streak:.2f}"/>')
         streak_svg="".join(streaks)
 
-        tof_label="TOF: localización adicional sobre la LOR" if usar_tof else "Sin TOF: la coincidencia aporta la LOR"
-        html_pet=f"""
+        # El panel central cambia según el algoritmo para mostrar ANTES → DURANTE → DESPUÉS.
+        if metodo_pet=="Retroproyección conceptual":
+            pasos=f"""
+            <text x="610" y="92" fill="#c9d6df" text-anchor="middle" font-size="14">ANTES</text>
+            <g opacity=".65"><line x1="555" y1="135" x2="665" y2="185" stroke="#ffd166" stroke-width="3"/>
+            <line x1="555" y1="185" x2="665" y2="135" stroke="#ffd166" stroke-width="3"/>
+            <line x1="610" y1="115" x2="610" y2="205" stroke="#ffd166" stroke-width="3"/></g>
+            <text x="610" y="232" fill="#8bd3ff" text-anchor="middle" font-size="13">LOR</text>
+            <text x="735" y="165" fill="white" text-anchor="middle" font-size="30">→</text>
+            <text x="850" y="92" fill="#c9d6df" text-anchor="middle" font-size="14">DURANTE</text>
+            <g opacity=".55"><ellipse cx="850" cy="160" rx="60" ry="68" fill="#245f9e"/>
+            <line x1="790" y1="115" x2="910" y2="205" stroke="#d66cff" stroke-width="3"/>
+            <line x1="790" y1="205" x2="910" y2="115" stroke="#d66cff" stroke-width="3"/></g>
+            <text x="850" y="245" fill="#ffd166" text-anchor="middle" font-size="13">superposición</text>
+            """
+        elif metodo_pet=="FBP":
+            pasos=f"""
+            <text x="610" y="92" fill="#c9d6df" text-anchor="middle" font-size="14">ANTES</text>
+            <path d="M555 190 C580 105,620 105,665 190" fill="none" stroke="#ddd" stroke-width="8"/>
+            <text x="610" y="232" fill="#8bd3ff" text-anchor="middle" font-size="13">datos</text>
+            <text x="735" y="165" fill="white" text-anchor="middle" font-size="30">→</text>
+            <text x="850" y="92" fill="#c9d6df" text-anchor="middle" font-size="14">DURANTE</text>
+            <path d="M795 190 L815 150 L835 180 L855 115 L875 180 L895 150 L915 190" fill="none" stroke="#7ef29a" stroke-width="5"/>
+            <text x="855" y="232" fill="#7ef29a" text-anchor="middle" font-size="13">filtrado</text>
+            """
+        else:
+            # Tres mini-imágenes que se hacen progresivamente más definidas.
+            b1=7.0; b2=max(3.0,7.0-it*.35); b3=blur_final
+            pasos=f"""
+            <text x="585" y="82" fill="#c9d6df" text-anchor="middle" font-size="13">ESTIMACIÓN INICIAL</text>
+            <g filter="url(#ib1)"><ellipse cx="585" cy="155" rx="48" ry="55" fill="#235f9e"/><circle cx="602" cy="165" r="17" fill="#ff9f1c"/></g>
+            <text x="690" y="160" fill="white" text-anchor="middle" font-size="28">→</text>
+            <text x="780" y="82" fill="#c9d6df" text-anchor="middle" font-size="13">COMPARAR</text>
+            <g filter="url(#ib2)"><ellipse cx="780" cy="155" rx="48" ry="55" fill="#235f9e"/><circle cx="797" cy="165" r="16" fill="#ff9f1c"/><circle cx="762" cy="145" r="11" fill="#35c4b8"/></g>
+            <text x="875" y="160" fill="white" text-anchor="middle" font-size="28">→</text>
+            <text x="950" y="82" fill="#c9d6df" text-anchor="middle" font-size="13">CORREGIR</text>
+            <g filter="url(#ib3)"><ellipse cx="950" cy="155" rx="48" ry="55" fill="#235f9e"/><circle cx="967" cy="165" r="15" fill="#ff3b30"/><circle cx="932" cy="145" r="11" fill="#35c4b8"/></g>
+            <path d="M950 225 C900 270,650 270,585 225" fill="none" stroke="#ffd166" stroke-width="2.5" stroke-dasharray="7 5"/>
+            <text x="770" y="282" fill="#ffd166" text-anchor="middle" font-size="13">repetir → nueva estimación</text>
+            """
+
+        html=f"""
         <div style="background:#0e1720;border:1px solid #29465d;border-radius:20px;padding:12px">
-        <svg viewBox="0 0 1120 410" width="100%" height="410">
-          <defs><filter id="petblur"><feGaussianBlur stdDeviation="{blur_pet:.2f}"/></filter></defs>
-          <text x="190" y="28" fill="white" text-anchor="middle" font-size="20" font-weight="bold">Coincidencias / LOR</text>
-          <text x="495" y="28" fill="white" text-anchor="middle" font-size="20" font-weight="bold">Datos PET</text>
-          <text x="700" y="28" fill="white" text-anchor="middle" font-size="20" font-weight="bold">Reconstrucción</text>
-          <text x="895" y="28" fill="white" text-anchor="middle" font-size="20" font-weight="bold">Imagen PET</text>
+        <svg viewBox="0 0 1160 430" width="100%" height="430">
+          <defs>
+            <filter id="pf"><feGaussianBlur stdDeviation="{blur_final:.2f}"/></filter>
+            <filter id="ib1"><feGaussianBlur stdDeviation="7"/></filter>
+            <filter id="ib2"><feGaussianBlur stdDeviation="{max(2.5,blur_final+2):.2f}"/></filter>
+            <filter id="ib3"><feGaussianBlur stdDeviation="{blur_final:.2f}"/></filter>
+          </defs>
 
-          <rect x="25" y="50" width="330" height="270" rx="15" fill="#071019" stroke="#29465d"/>
-          <circle cx="190" cy="190" r="145" fill="none" stroke="#29485d" stroke-width="18"/>
-          <ellipse cx="190" cy="190" rx="72" ry="95" fill="#243746"/>
-          {lors_svg}
-          <circle cx="170" cy="178" r="8" fill="#ff4d6d"/>
-          <text x="190" y="348" fill="#8bd3ff" text-anchor="middle" font-size="14">{tof_label}</text>
+          <text x="165" y="28" fill="white" text-anchor="middle" font-size="20" font-weight="bold">1 · Coincidencias / LOR</text>
+          <text x="430" y="28" fill="white" text-anchor="middle" font-size="20" font-weight="bold">2 · Datos</text>
+          <text x="775" y="28" fill="white" text-anchor="middle" font-size="20" font-weight="bold">3 · Qué hace el algoritmo</text>
+          <text x="1040" y="28" fill="white" text-anchor="middle" font-size="20" font-weight="bold">4 · Resultado</text>
 
-          <rect x="380" y="50" width="225" height="270" rx="15" fill="#071019" stroke="#29465d"/>
-          <path d="M405 265 C435 85,485 85,575 260" fill="none" stroke="#eee" stroke-width="10" opacity=".78"/>
-          <path d="M405 105 C460 270,520 255,575 105" fill="none" stroke="#999" stroke-width="7" opacity=".6"/>
-          <path d="M410 210 C465 120,520 120,575 215" fill="none" stroke="#7ef29a" stroke-width="5" opacity="{'.75' if usar_tof else '.15'}"/>
-          <text x="492" y="348" fill="#8bd3ff" text-anchor="middle" font-size="14">eventos organizados para reconstruir</text>
+          <rect x="20" y="48" width="290" height="280" rx="15" fill="#071019" stroke="#29465d"/>
+          <circle cx="165" cy="170" r="125" fill="none" stroke="#29485d" stroke-width="16"/>
+          <ellipse cx="165" cy="170" rx="62" ry="82" fill="#243746"/>{lors_svg}
+          <text x="165" y="350" fill="#8bd3ff" text-anchor="middle" font-size="13">{"TOF agrega localización sobre la LOR" if usar_tof else "cada coincidencia aporta una LOR"}</text>
 
-          <rect x="630" y="50" width="170" height="270" rx="15" fill="#071019" stroke="#29465d"/>
-          <text x="715" y="145" fill="#ffd166" text-anchor="middle" font-size="14">{proceso_pet}</text>
-          <text x="715" y="195" fill="white" text-anchor="middle" font-size="38">→</text>
-          <text x="715" y="245" fill="#c9d6df" text-anchor="middle" font-size="14">{eventos:,} eventos</text>
+          <rect x="330" y="48" width="200" height="280" rx="15" fill="#071019" stroke="#29465d"/>
+          <path d="M350 265 C375 90,420 90,510 260" fill="none" stroke="#eee" stroke-width="10" opacity=".78"/>
+          <path d="M350 105 C400 270,455 255,510 105" fill="none" stroke="#999" stroke-width="7" opacity=".6"/>
+          <text x="430" y="350" fill="#8bd3ff" text-anchor="middle" font-size="13">{eventos:,} coincidencias</text>
 
-          <rect x="825" y="50" width="270" height="270" rx="15" fill="#020508" stroke="#29465d"/>
+          <rect x="545" y="48" width="440" height="280" rx="15" fill="#071019" stroke="#29465d"/>
+          {pasos}
+
+          <rect x="1000" y="48" width="145" height="280" rx="15" fill="#020508" stroke="#29465d"/>
           {streak_svg}
-          <g filter="url(#petblur)" opacity="{0.40+0.60*progreso_pet:.2f}">
-            <ellipse cx="895" cy="180" rx="72" ry="84" fill="#3b1465"/>
-            <ellipse cx="895" cy="180" rx="60" ry="70" fill="#1769aa"/>
-            <ellipse cx="872" cy="173" rx="22" ry="31" fill="#35c4b8"/>
-            <ellipse cx="925" cy="190" rx="27" ry="35" fill="#ff9f1c"/>
-            <ellipse cx="925" cy="190" rx="14" ry="20" fill="#ff3b30"/>
-            <ellipse cx="895" cy="145" rx="12" ry="19" fill="#b7e75f"/>
+          <g filter="url(#pf)" opacity="{0.45+0.55*progreso:.2f}">
+            <ellipse cx="1072" cy="170" rx="55" ry="67" fill="#4b1677"/>
+            <ellipse cx="1072" cy="170" rx="46" ry="57" fill="#1769aa"/>
+            <ellipse cx="1055" cy="160" rx="17" ry="24" fill="#35c4b8"/>
+            <ellipse cx="1093" cy="180" rx="20" ry="27" fill="#ff9f1c"/>
+            <ellipse cx="1093" cy="180" rx="10" ry="15" fill="#ff3b30"/>
           </g>
-          <text x="895" y="348" fill="#ffd166" text-anchor="middle" font-size="14">definición conceptual: {int(progreso_pet*100)}%</text>
-          <text x="560" y="392" fill="#8bd3ff" text-anchor="middle" font-size="16">
-            COINCIDENCIAS → LOR → DATOS → RECONSTRUCCIÓN → IMAGEN PET
+          <text x="1072" y="350" fill="#ffd166" text-anchor="middle" font-size="12">imagen reconstruida</text>
+
+          <text x="580" y="402" fill="#8bd3ff" text-anchor="middle" font-size="16">
+            COINCIDENCIAS → DATOS → {proceso} → NUEVA ESTIMACIÓN / IMAGEN
           </text>
         </svg></div>"""
-        components.html(html_pet,height=440)
+        components.html(html,height=465)
+        st.info(etapa_texto)
 
-        st.markdown("#### PET + CT: ¿qué aporta cada imagen?")
-        fusion=st.slider("Fusión conceptual CT ↔ PET",0,100,50,key="fusion_pet")
+        if metodo_pet=="Iterativa":
+            st.markdown(
+                "**Lectura del ciclo:** empezamos con una estimación → calculamos qué datos produciría → "
+                "la comparamos con las coincidencias medidas → usamos la diferencia para corregir la imagen → repetimos."
+            )
+
+        st.markdown("#### PET + CT: anatomía + función")
+        fusion=st.slider("Fusión conceptual CT ↔ PET",0,100,50,key="fusion_pet_v2")
         c1,c2=st.columns(2)
         c1.info("**CT:** referencia anatómica.")
         c2.success("**PET:** distribución funcional/metabólica del trazador.")
         st.progress(fusion/100)
-        st.caption("TOF no crea una imagen anatómica: mejora la información temporal usada en la reconstrucción PET.")
+        st.caption("Representación didáctica. TOF aporta información temporal para localizar mejor el evento a lo largo de la LOR; no reemplaza la reconstrucción.")
 
     with p6:
         st.subheader("🧠 Comprobá lo aprendido")
