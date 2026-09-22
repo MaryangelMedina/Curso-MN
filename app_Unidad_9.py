@@ -747,16 +747,70 @@ with lab_spect:
         )
 
     with s4:
-        st.subheader("🧩 De las proyecciones al corte transversal")
-        metodo = st.radio("Método de reconstrucción", ["Retroproyección","Retroproyección filtrada (FBP)","Iterativa"], horizontal=True)
-        explicacion = {
-            "Retroproyección":"Cada perfil se distribuye nuevamente sobre la matriz y aparece el borroneo característico.",
-            "Retroproyección filtrada (FBP)":"Los perfiles se filtran antes de retroproyectarse para controlar el borroneo.",
-            "Iterativa":"La estimación de imagen se actualiza comparando datos calculados con los datos adquiridos."
-        }[metodo]
-        st.info(explicacion)
-        st.markdown("### `PROYECCIONES → SINOGRAMA → RECONSTRUCCIÓN → CORTE TRANSVERSAL`")
-        st.caption("La clase también incluye normalización y correcciones de centro de rotación y uniformidad antes de reconstruir.")
+        st.subheader("🧩 Reconstrucción SPECT: mirá qué hace cada método")
+        st.write("Compará visualmente retroproyección simple, FBP e iterativa. Es un modelo didáctico, no un reconstructor clínico.")
+        metodo = st.radio("Método de reconstrucción",
+                          ["Retroproyección simple","Retroproyección filtrada (FBP)","Iterativa"],
+                          horizontal=True)
+
+        if metodo == "Retroproyección simple":
+            nitidez, streak = 7.0, 0.52
+            proceso = "Retroproyectar"
+            detalle = "Las contribuciones se superponen y queda el borroneo característico."
+            estado = "Sin filtrado previo"
+        elif metodo == "Retroproyección filtrada (FBP)":
+            corte = st.slider("Frecuencia de corte conceptual del filtro",20,100,65,5)
+            nitidez, streak = max(1.2,6.0-corte/22), 0.16
+            proceso = "Filtrar → retroproyectar"
+            detalle = "El filtrado controla el borroneo antes de formar el corte."
+            estado = f"Frecuencia de corte conceptual: {corte}%"
+        else:
+            it = st.slider("Número conceptual de iteraciones",1,10,4)
+            nitidez, streak = max(0.8,6.5-0.58*it), max(0.04,0.35-0.03*it)
+            proceso = "Estimar → comparar → corregir → repetir"
+            detalle = "La estimación se actualiza progresivamente al comparar datos calculados y adquiridos."
+            estado = f"Iteración conceptual: {it}"
+
+        rayas=[]
+        for k in range(12):
+            aa=math.pi*k/12
+            dx=72*math.cos(aa); dy=72*math.sin(aa)
+            rayas.append(f'<line x1="{925-dx:.1f}" y1="{180-dy:.1f}" x2="{925+dx:.1f}" y2="{180+dy:.1f}" stroke="#d66cff" stroke-width="2" opacity="{streak:.2f}"/>')
+        rayas_svg="".join(rayas)
+
+        html_rec=f"""
+        <div style="background:#0e1720;border:1px solid #29465d;border-radius:20px;padding:12px">
+        <svg viewBox="0 0 1120 390" width="100%" height="390">
+          <defs><filter id="br"><feGaussianBlur stdDeviation="{nitidez:.2f}"/></filter></defs>
+          <text x="175" y="28" fill="white" text-anchor="middle" font-size="20" font-weight="bold">Proyecciones</text>
+          <text x="465" y="28" fill="white" text-anchor="middle" font-size="20" font-weight="bold">Sinograma</text>
+          <text x="710" y="28" fill="white" text-anchor="middle" font-size="20" font-weight="bold">Proceso</text>
+          <text x="925" y="28" fill="white" text-anchor="middle" font-size="20" font-weight="bold">Corte reconstruido</text>
+          <rect x="35" y="50" width="280" height="245" rx="14" fill="#071019" stroke="#29465d"/>
+          <ellipse cx="95" cy="145" rx="25" ry="60" fill="#ddd"/><ellipse cx="155" cy="165" rx="22" ry="48" fill="#999"/>
+          <ellipse cx="215" cy="130" rx="28" ry="65" fill="#eee"/><ellipse cx="270" cy="175" rx="18" ry="42" fill="#aaa"/>
+          <text x="175" y="325" fill="#8bd3ff" text-anchor="middle" font-size="15">vistas desde distintos ángulos</text>
+          <rect x="340" y="50" width="250" height="245" rx="14" fill="#071019" stroke="#29465d"/>
+          <path d="M365 250 C405 80,455 80,565 245" fill="none" stroke="#eee" stroke-width="12" opacity=".8"/>
+          <path d="M365 100 C435 250,505 250,565 105" fill="none" stroke="#999" stroke-width="8" opacity=".65"/>
+          <text x="465" y="325" fill="#8bd3ff" text-anchor="middle" font-size="15">datos organizados por ángulo</text>
+          <rect x="615" y="50" width="190" height="245" rx="14" fill="#071019" stroke="#29465d"/>
+          <text x="710" y="130" fill="#ffd166" text-anchor="middle" font-size="15">{proceso}</text>
+          <text x="710" y="180" fill="#fff" text-anchor="middle" font-size="38">→</text>
+          <text x="710" y="225" fill="#c9d6df" text-anchor="middle" font-size="13">{estado}</text>
+          <rect x="825" y="50" width="260" height="245" rx="14" fill="#020508" stroke="#29465d"/>
+          {rayas_svg}
+          <g filter="url(#br)">
+            <ellipse cx="925" cy="175" rx="72" ry="82" fill="#4b1677"/><ellipse cx="925" cy="175" rx="60" ry="69" fill="#1c67b1"/>
+            <ellipse cx="900" cy="165" rx="22" ry="31" fill="#35c4b8"/><ellipse cx="953" cy="185" rx="25" ry="34" fill="#ff9f1c"/>
+            <ellipse cx="953" cy="185" rx="13" ry="20" fill="#ff3b30"/><ellipse cx="925" cy="142" rx="12" ry="19" fill="#b7e75f"/>
+          </g>
+          <text x="925" y="325" fill="#ffd166" text-anchor="middle" font-size="14">{metodo}</text>
+          <text x="560" y="370" fill="#8bd3ff" text-anchor="middle" font-size="16">PROYECCIONES → SINOGRAMA → RECONSTRUCCIÓN → IMAGEN</text>
+        </svg></div>"""
+        components.html(html_rec,height=420)
+        st.info(detalle)
+        st.caption("Representación didáctica: los cambios de nitidez y artefactos permiten comparar visualmente los métodos.")
 
     with s5:
         st.subheader("🧠 Comprobá lo aprendido")
@@ -772,7 +826,7 @@ with lab_spect:
 
 with lab_pet:
     st.header("⭕ Del evento de aniquilación a la imagen PET")
-    p1,p2,p3,p4,p5 = st.tabs(["1️⃣ Aniquilación","2️⃣ Coincidencia / LOR","3️⃣ Detector PET","4️⃣ Imagen PET","5️⃣ Preguntas"])
+    p1,p2,p3,p4,p5,p6 = st.tabs(["1️⃣ Aniquilación","2️⃣ Eventos / Coincidencias","3️⃣ Detector PET","4️⃣ Tiempo muerto","5️⃣ Imagen PET","6️⃣ Preguntas"])
 
     with p1:
         st.subheader("💥 Aniquilación electrón-positrón")
@@ -792,31 +846,33 @@ with lab_pet:
         st.info("El modelo visual representa la aniquilación electrón-positrón y los dos fotones de 511 keV mostrados en la presentación.")
 
     with p2:
-        st.subheader("📏 Línea de respuesta (LOR)")
-        ang = st.slider("Orientación de la LOR", 0, 175, 30, 5)
-        cx,cy,R = 400,210,165
-        dx = R*math.cos(math.radians(ang))
-        dy = R*math.sin(math.radians(ang))
-        detectores = "".join(
-            f'<circle cx="{cx+R*math.cos(math.radians(q))}" cy="{cy+R*math.sin(math.radians(q))}" r="7" fill="#5aa9e6"/>'
-            for q in range(0,360,10)
-        )
-        html = f"""
-        <div style="background:#0e1720;border-radius:20px">
-        <svg viewBox="0 0 800 430" width="100%" height="430">
-          <text x="400" y="28" fill="white" text-anchor="middle" font-size="25">Anillo PET y línea de respuesta</text>
-          <circle cx="{cx}" cy="{cy}" r="{R}" fill="none" stroke="#29485d" stroke-width="25"/>
-          {detectores}
-          <ellipse cx="{cx}" cy="{cy}" rx="95" ry="125" fill="#d7a37d"/>
-          <circle cx="{cx}" cy="{cy}" r="9" fill="#ff4d6d"/>
-          <line x1="{cx-dx}" y1="{cy-dy}" x2="{cx+dx}" y2="{cy+dy}" stroke="#ffd166" stroke-width="5"/>
-          <circle cx="{cx-dx}" cy="{cy-dy}" r="13" fill="#7ef29a"/>
-          <circle cx="{cx+dx}" cy="{cy+dy}" r="13" fill="#7ef29a"/>
-          <text x="400" y="405" fill="#ffd166" text-anchor="middle" font-size="20">LOR entre detectores en coincidencia</text>
-        </svg></div>
-        """
-        components.html(html, height=460)
-        st.write("Mové la orientación: cambia el par de detectores y la línea de respuesta que atraviesa el evento.")
+        st.subheader("📏 Eventos PET: verdaderos, dispersados y aleatorios")
+        tipo_evento=st.radio("Elegí un evento",
+            ["Coincidencia verdadera","Coincidencia dispersada","Coincidencia aleatoria"],horizontal=True)
+        ang=st.slider("Orientación del evento",0,175,30,5,key="pet_event_angle")
+        cx,cy,R=400,210,165
+        dx=R*math.cos(math.radians(ang)); dy=R*math.sin(math.radians(ang))
+        detectores="".join(f'<circle cx="{cx+R*math.cos(math.radians(q))}" cy="{cy+R*math.sin(math.radians(q))}" r="7" fill="#5aa9e6"/>' for q in range(0,360,10))
+        if tipo_evento=="Coincidencia verdadera":
+            trazos=f'<line x1="{cx-dx}" y1="{cy-dy}" x2="{cx+dx}" y2="{cy+dy}" stroke="#7ef29a" stroke-width="5"/><circle cx="{cx-dx}" cy="{cy-dy}" r="13" fill="#7ef29a"/><circle cx="{cx+dx}" cy="{cy+dy}" r="13" fill="#7ef29a"/>'
+            mensaje="Mismo evento + ventana temporal → LOR correcta"; color="#7ef29a"
+        elif tipo_evento=="Coincidencia dispersada":
+            qx,qy=cx+45,cy-25
+            trazos=f'<line x1="{cx}" y1="{cy}" x2="{qx}" y2="{qy}" stroke="#ffd166" stroke-width="4"/><line x1="{qx}" y1="{qy}" x2="{cx+dx}" y2="{cy+dy}" stroke="#ff9f1c" stroke-width="5"/><line x1="{cx}" y1="{cy}" x2="{cx-dx}" y2="{cy-dy}" stroke="#ffd166" stroke-width="4"/><circle cx="{qx}" cy="{qy}" r="10" fill="#ff9f1c"/><circle cx="{cx-dx}" cy="{cy-dy}" r="13" fill="#ff9f1c"/><circle cx="{cx+dx}" cy="{cy+dy}" r="13" fill="#ff9f1c"/>'
+            mensaje="Un fotón cambia de dirección → LOR asignada incorrecta"; color="#ff9f1c"
+        else:
+            dx2=R*math.cos(math.radians(ang+55)); dy2=R*math.sin(math.radians(ang+55))
+            trazos=f'<circle cx="{cx-45}" cy="{cy-35}" r="8" fill="#ff4d6d"/><circle cx="{cx+35}" cy="{cy+45}" r="8" fill="#ff4d6d"/><line x1="{cx-45}" y1="{cy-35}" x2="{cx-dx}" y2="{cy-dy}" stroke="#f06cff" stroke-width="4"/><line x1="{cx+35}" y1="{cy+45}" x2="{cx+dx2}" y2="{cy+dy2}" stroke="#f06cff" stroke-width="4"/><line x1="{cx-dx}" y1="{cy-dy}" x2="{cx+dx2}" y2="{cy+dy2}" stroke="#f06cff" stroke-width="3" stroke-dasharray="7 6"/><circle cx="{cx-dx}" cy="{cy-dy}" r="13" fill="#f06cff"/><circle cx="{cx+dx2}" cy="{cy+dy2}" r="13" fill="#f06cff"/>'
+            mensaje="Eventos diferentes dentro de la ventana → coincidencia aleatoria"; color="#f06cff"
+        html=f"""<div style="background:#0e1720;border-radius:20px"><svg viewBox="0 0 800 430" width="100%" height="430">
+        <text x="400" y="28" fill="white" text-anchor="middle" font-size="24">{tipo_evento}</text>
+        <circle cx="{cx}" cy="{cy}" r="{R}" fill="none" stroke="#29485d" stroke-width="25"/>{detectores}
+        <ellipse cx="{cx}" cy="{cy}" rx="95" ry="125" fill="#d7a37d"/><circle cx="{cx}" cy="{cy}" r="8" fill="#ff4d6d"/>{trazos}
+        <text x="400" y="405" fill="{color}" text-anchor="middle" font-size="17">{mensaje}</text></svg></div>"""
+        components.html(html,height=460)
+        ventana=st.slider("Ventana temporal conceptual de coincidencia",1,10,4,key="ventana_pet")
+        st.progress(ventana/10)
+        st.caption("Al ampliar la ventana temporal aumenta la posibilidad de aceptar detecciones no relacionadas. Control didáctico, sin valores de un equipo real.")
 
     with p3:
         st.subheader("🔎 ¿Qué hay dentro del anillo detector?")
@@ -831,6 +887,29 @@ with lab_pet:
         st.markdown("### `511 keV → CRISTAL → LUZ → FOTODETECTOR → ELECTRÓNICA → COINCIDENCIA → LOR`")
 
     with p4:
+        st.subheader("⏱️ Tiempo muerto: cuando los eventos llegan demasiado rápido")
+        tasa=st.slider("Tasa conceptual de eventos",10,100,35,5,key="deadtime_rate")
+        capacidad=65
+        registrados=min(tasa,capacidad); perdidos=max(0,tasa-capacidad)
+        c1,c2,c3=st.columns(3)
+        c1.metric("Eventos que llegan",tasa); c2.metric("Procesados",registrados); c3.metric("No procesados",perdidos)
+        barras=""
+        for k in range(20):
+            nivel=(k+1)*5
+            fill="#7ef29a" if nivel<=registrados else ("#ff4d6d" if nivel<=tasa else "#263947")
+            barras+=f'<rect x="{65+k*35}" y="135" width="24" height="90" rx="5" fill="{fill}"/>'
+        html_dt=f"""<div style="background:#0e1720;border-radius:18px"><svg viewBox="0 0 800 300" width="100%" height="300">
+        <text x="400" y="35" fill="white" text-anchor="middle" font-size="23">Electrónica procesando eventos</text>{barras}
+        <text x="400" y="265" fill="#8bd3ff" text-anchor="middle" font-size="16">Verde = procesado · Rojo = evento no procesado</text>
+        </svg></div>"""
+        components.html(html_dt,height=325)
+        if perdidos==0:
+            st.success("En este modelo la electrónica alcanza a procesar los eventos que llegan.")
+        else:
+            st.warning("Al aumentar la tasa, algunos eventos llegan mientras el sistema sigue ocupado: aparecen pérdidas por tiempo muerto.")
+        st.caption("Modelo cualitativo del concepto de tiempo muerto; no utiliza parámetros de un equipo PET real.")
+
+    with p5:
         st.subheader("🧠 De muchas coincidencias a la imagen PET")
         eventos = st.select_slider("Cantidad conceptual de eventos", options=[100,1000,10000,100000], value=10000)
         metodo = st.radio("Reconstrucción", ["FBP","Iterativa","Deep Learning (mencionado en la presentación)"], horizontal=True)
@@ -843,7 +922,7 @@ with lab_pet:
         st.progress(fusion/100)
         st.caption("CT aporta referencia anatómica y PET representa la distribución funcional/metabólica del trazador.")
 
-    with p5:
+    with p6:
         st.subheader("🧠 Comprobá lo aprendido")
         pregunta("p_q1","¿Qué energía tienen los fotones de aniquilación mostrados en la presentación?",
                  ["140 keV","511 keV","662 keV"],"511 keV",
