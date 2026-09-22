@@ -563,18 +563,81 @@ with lab_spect:
         xb = cx2 + r2 * math.cos(math.radians(ang_b))
         yb = cy2 + r2 * math.sin(math.radians(ang_b))
 
+        # Sinograma conceptual del sistema de doble cabezal.
+        filas_doble = []
+        filas_totales_doble = 40
+        filas_visibles_doble = round(filas_totales_doble * progreso_doble)
+        for k in range(filas_totales_doble):
+            yy = 67 + k * 5.0
+            fase = 2 * math.pi * k / filas_totales_doble
+            xx1 = 775 + 62 * math.sin(fase)
+            xx2 = 775 + 39 * math.sin(fase + 1.65)
+            op = 0.88 if k < filas_visibles_doble else 0.07
+            filas_doble.append(
+                f'<circle cx="{xx1:.1f}" cy="{yy:.1f}" r="6.5" fill="#f6f6f6" opacity="{op}"/>'
+                f'<circle cx="{xx2:.1f}" cy="{yy:.1f}" r="4.5" fill="#bfc9d2" opacity="{op*0.75:.2f}"/>'
+            )
+        sino_doble_svg = "".join(filas_doble)
+
+        # Reconstrucción progresiva didáctica, equivalente al esquema de un cabezal.
+        streaks_doble = []
+        n_streak_doble = 13 if nproj_doble == 32 else (6 if nproj_doble == 64 else 2)
+        streak_op_doble = max(
+            0.04,
+            (1.0 - progreso_doble) * 0.52 + (0.18 if nproj_doble == 32 else 0.04)
+        )
+        for k in range(n_streak_doble):
+            a = math.pi * k / max(1, n_streak_doble)
+            dx = 72 * math.cos(a)
+            dy = 72 * math.sin(a)
+            streaks_doble.append(
+                f'<line x1="{1080-dx:.1f}" y1="{180-dy:.1f}" '
+                f'x2="{1080+dx:.1f}" y2="{180+dy:.1f}" '
+                f'stroke="#d66cff" stroke-width="2" opacity="{streak_op_doble:.2f}"/>'
+            )
+        streak_doble_svg = "".join(streaks_doble)
+        op_img_doble = 0.18 + 0.82 * progreso_doble
+        blur_doble = max(
+            1.0,
+            8.0 * (1.0 - progreso_doble) + (2.2 if nproj_doble == 32 else 0.7)
+        )
+
+        # Dos proyecciones planares simultáneas, una por cada cabezal.
+        fase_a = math.radians(ang_a)
+        foco_a1 = 118 + 31 * math.cos(fase_a)
+        foco_a2 = 190 - 22 * math.sin(fase_a)
+        fase_b = math.radians(ang_b)
+        foco_b1 = 118 + 31 * math.cos(fase_b)
+        foco_b2 = 190 - 22 * math.sin(fase_b)
+
         html_doble = f"""
         <div style="background:#0e1720;border:1px solid #29465d;border-radius:22px;
                     padding:14px;color:white;font-family:Arial">
-        <svg viewBox="0 0 1000 410" width="100%" height="410">
-          <text x="365" y="28" fill="#fff" text-anchor="middle" font-size="21" font-weight="bold">
-            SPECT de doble cabezal · vista superior
+        <svg viewBox="0 0 1220 430" width="100%" height="430">
+          <defs>
+            <filter id="blurRecD">
+              <feGaussianBlur stdDeviation="{blur_doble:.2f}"/>
+            </filter>
+            <filter id="blurProjD">
+              <feGaussianBlur stdDeviation="4.5"/>
+            </filter>
+          </defs>
+
+          <text x="225" y="28" fill="#fff" text-anchor="middle" font-size="20" font-weight="bold">
+            Doble cabezal · vista superior
           </text>
-          <text x="805" y="28" fill="#fff" text-anchor="middle" font-size="21" font-weight="bold">
-            Adquisición simultánea
+          <text x="535" y="28" fill="#fff" text-anchor="middle" font-size="20" font-weight="bold">
+            2 proyecciones simultáneas
+          </text>
+          <text x="785" y="28" fill="#fff" text-anchor="middle" font-size="20" font-weight="bold">
+            Sinograma
+          </text>
+          <text x="1080" y="28" fill="#fff" text-anchor="middle" font-size="20" font-weight="bold">
+            Reconstrucción transaxial
           </text>
 
-          <rect x="30" y="45" width="665" height="305" rx="16" fill="#09131c" stroke="#29465d"/>
+          <!-- sistema de doble cabezal -->
+          <rect x="20" y="45" width="410" height="305" rx="16" fill="#09131c" stroke="#29465d"/>
           <circle cx="{cx2}" cy="{cy2}" r="{r2}" fill="none" stroke="#55778e"
                   stroke-width="3" stroke-dasharray="7 7"/>
           <ellipse cx="{cx2}" cy="{cy2}" rx="70" ry="96" fill="#d6a27c"/>
@@ -591,40 +654,85 @@ with lab_spect:
                   fill="#8b7cf6" stroke="#eeeaff" stroke-width="4"/>
             <rect x="-47" y="-18" width="94" height="10" rx="3" fill="#8fd3a8"/>
           </g>
-
           <line x1="{xa:.1f}" y1="{ya:.1f}" x2="{cx2}" y2="{cy2}"
                 stroke="#ffd166" stroke-width="3" stroke-dasharray="6 5"/>
           <line x1="{xb:.1f}" y1="{yb:.1f}" x2="{cx2}" y2="{cy2}"
                 stroke="#ffd166" stroke-width="3" stroke-dasharray="6 5"/>
-
-          <text x="365" y="330" fill="#ffd166" text-anchor="middle" font-size="16">
-            Cabezal A: {ang_a:.2f}°  ·  Cabezal B: {ang_b:.2f}°
+          <text x="225" y="330" fill="#ffd166" text-anchor="middle" font-size="15">
+            A: {ang_a:.2f}° · B: {ang_b:.2f}°
           </text>
 
-          <rect x="720" y="58" width="250" height="270" rx="16" fill="#09131c" stroke="#29465d"/>
-          <text x="845" y="95" fill="#5aa9e6" text-anchor="middle" font-size="18">
-            Cabezal A → proyección {min(adquiridas_doble+1,nproj_doble)}
+          <!-- dos imágenes planares -->
+          <rect x="448" y="45" width="205" height="305" rx="16" fill="#09131c" stroke="#29465d"/>
+          <rect x="466" y="66" width="76" height="220" rx="6" fill="#020508"/>
+          <rect x="559" y="66" width="76" height="220" rx="6" fill="#020508"/>
+          <g filter="url(#blurProjD)">
+            <ellipse cx="504" cy="{foco_a1:.1f}" rx="17" ry="29" fill="#f5f5f5" opacity=".66"/>
+            <ellipse cx="504" cy="{foco_a2:.1f}" rx="11" ry="19" fill="#bfc9d2" opacity=".48"/>
+            <ellipse cx="597" cy="{foco_b1:.1f}" rx="17" ry="29" fill="#f5f5f5" opacity=".66"/>
+            <ellipse cx="597" cy="{foco_b2:.1f}" rx="11" ry="19" fill="#bfc9d2" opacity=".48"/>
+          </g>
+          <text x="504" y="310" fill="#5aa9e6" text-anchor="middle" font-size="14">Cabezal A</text>
+          <text x="597" y="310" fill="#b7aaff" text-anchor="middle" font-size="14">Cabezal B</text>
+          <text x="550" y="334" fill="#ffd166" text-anchor="middle" font-size="14">
+            2 imágenes / posición
           </text>
-          <text x="845" y="130" fill="#b7aaff" text-anchor="middle" font-size="18">
-            Cabezal B → proyección {min(adquiridas_doble+2,nproj_doble)}
-          </text>
-          <text x="845" y="185" fill="#fff" text-anchor="middle" font-size="20" font-weight="bold">
-            2 imágenes planares
-          </text>
-          <text x="845" y="214" fill="#fff" text-anchor="middle" font-size="20" font-weight="bold">
-            por posición
-          </text>
-          <text x="845" y="270" fill="#ffd166" text-anchor="middle" font-size="17">
+
+          <!-- sinograma -->
+          <rect x="675" y="45" width="210" height="305" rx="16" fill="#09131c" stroke="#29465d"/>
+          <rect x="715" y="62" width="120" height="220" rx="5" fill="#020508"/>
+          {sino_doble_svg}
+          <line x1="715" y1="{67 + filas_visibles_doble*5.0:.1f}"
+                x2="835" y2="{67 + filas_visibles_doble*5.0:.1f}"
+                stroke="#ff4d5a" stroke-width="3" opacity="{1 if pos_doble>0 else 0}"/>
+          <text x="780" y="310" fill="#c9d6df" text-anchor="middle" font-size="14">
             {adquiridas_doble} / {nproj_doble} proyecciones
           </text>
-          <text x="845" y="300" fill="#8bd3ff" text-anchor="middle" font-size="15">
-            progreso: {int(progreso_doble*100)} %
+          <text x="780" y="334" fill="#8bd3ff" text-anchor="middle" font-size="14">
+            se completa de a 2
+          </text>
+
+          <!-- reconstrucción -->
+          <rect x="905" y="45" width="295" height="305" rx="16" fill="#09131c" stroke="#29465d"/>
+          <rect x="970" y="67" width="220" height="218" rx="8" fill="#020508"/>
+          {streak_doble_svg}
+          <g filter="url(#blurRecD)" opacity="{op_img_doble:.2f}">
+            <ellipse cx="1080" cy="176" rx="78" ry="86" fill="#4b1677"/>
+            <ellipse cx="1080" cy="176" rx="65" ry="72" fill="#1c67b1"/>
+            <ellipse cx="1051" cy="168" rx="23" ry="32" fill="#35c4b8"/>
+            <ellipse cx="1113" cy="184" rx="27" ry="36" fill="#ff9f1c"/>
+            <ellipse cx="1113" cy="184" rx="15" ry="21" fill="#ff3b30"/>
+            <ellipse cx="1080" cy="142" rx="13" ry="21" fill="#b7e75f"/>
+          </g>
+          <text x="1080" y="310" fill="#ffd166" text-anchor="middle" font-size="15">
+            Reconstrucción acumulada: {int(progreso_doble*100)} %
+          </text>
+          <text x="1080" y="334" fill="#c9d6df" text-anchor="middle" font-size="14">
+            {"Adquisición completa" if progreso_doble >= 1 else "Imagen aún incompleta"}
+          </text>
+
+          <line x1="420" y1="385" x2="1170" y2="385" stroke="#35576f" stroke-width="2"/>
+          <text x="795" y="414" fill="#8bd3ff" text-anchor="middle" font-size="16">
+            2 proyecciones simultáneas → sinograma → reconstrucción progresiva
           </text>
         </svg>
         </div>
         """
-        components.html(html_doble, height=440)
+        components.html(html_doble, height=475)
         st.progress(progreso_doble)
+        if pos_doble == 0:
+            st.info("Inicio: los dos cabezales están listos para adquirir simultáneamente.")
+        elif progreso_doble < 1:
+            st.info(
+                f"Adquisición en curso: {adquiridas_doble} de {nproj_doble} proyecciones. "
+                "Cada nueva posición incorpora dos imágenes planares y actualiza el sinograma y la reconstrucción."
+            )
+        else:
+            st.success(
+                f"Adquisición completa: {nproj_doble} proyecciones obtenidas con "
+                f"{posiciones_doble} posiciones del sistema de doble cabezal. "
+                "La imagen de la derecha representa la reconstrucción final."
+            )
 
         st.markdown(
             f"**Comparación:** con un cabezal, una posición angular aporta una proyección. "
