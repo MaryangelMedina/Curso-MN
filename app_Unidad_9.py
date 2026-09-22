@@ -875,39 +875,193 @@ with lab_pet:
         st.caption("Al ampliar la ventana temporal aumenta la posibilidad de aceptar detecciones no relacionadas. Control didáctico, sin valores de un equipo real.")
 
     with p3:
-        st.subheader("🔎 ¿Qué hay dentro del anillo detector?")
-        comp = st.selectbox("Explorá un componente", ["Cristal de centelleo","PMT / SiPM","Electrónica","Circuito de coincidencias"])
-        info = {
-            "Cristal de centelleo":"La presentación menciona materiales de centelleo empleados en detectores PET.",
-            "PMT / SiPM":"El fotodetector transforma la señal luminosa del cristal en señal eléctrica.",
-            "Electrónica":"Procesa las señales generadas por los bloques detectores.",
-            "Circuito de coincidencias":"Asocia detecciones compatibles temporalmente con un evento de aniquilación."
-        }[comp]
-        st.info(info)
-        st.markdown("### `511 keV → CRISTAL → LUZ → FOTODETECTOR → ELECTRÓNICA → COINCIDENCIA → LOR`")
+        st.subheader("💎 Cristales detectores PET: de los primeros sistemas a los actuales")
+        st.write(
+            "El cristal convierte la energía del fotón de 511 keV en luz. "
+            "No existe un cristal perfecto: se busca un compromiso entre poder de frenado, "
+            "cantidad de luz, rapidez, resolución energética, robustez y costo."
+        )
+
+        cristales = {
+            "NaI(Tl)": {
+                "nombre":"Yoduro de sodio dopado con talio", "formula":"NaI:Tl",
+                "dens":"3.67", "zeff":"51", "luz":"≈38 000", "decay":"≈230 ns",
+                "rob":"Higroscópico; requiere encapsulado",
+                "epoca":"Histórico / primeros desarrollos PET",
+                "pro":"Alta producción de luz y tecnología muy conocida.",
+                "contra":"Baja densidad para 511 keV y respuesta relativamente lenta."
+            },
+            "BGO": {
+                "nombre":"Germanato de bismuto", "formula":"Bi₄Ge₃O₁₂",
+                "dens":"7.13", "zeff":"≈74–75", "luz":"≈9 000", "decay":"≈300 ns",
+                "rob":"No higroscópico; mecánicamente robusto",
+                "epoca":"Muy extendido desde la generación PET de los años 1980–1990",
+                "pro":"Muy denso y excelente poder de frenado para 511 keV.",
+                "contra":"Poca luz y decaimiento lento; menos favorable para TOF clásico."
+            },
+            "GSO": {
+                "nombre":"Oxiortosilicato de gadolinio dopado con cerio", "formula":"Gd₂SiO₅:Ce",
+                "dens":"≈6.7", "zeff":"≈59", "luz":"≈13 000", "decay":"≈50–65 ns",
+                "rob":"No higroscópico",
+                "epoca":"Generación intermedia de PET",
+                "pro":"Más rápido que BGO y con buena densidad.",
+                "contra":"Menor producción de luz y poder de frenado que LSO/LYSO."
+            },
+            "LSO": {
+                "nombre":"Oxiortosilicato de lutecio dopado con cerio", "formula":"Lu₂SiO₅:Ce",
+                "dens":"≈7.4", "zeff":"≈66", "luz":"≈26 000–31 000", "decay":"≈40 ns",
+                "rob":"No higroscópico; robusto",
+                "epoca":"PET moderno / base de sistemas TOF",
+                "pro":"Denso, rápido y con buena producción de luz: muy favorable para TOF.",
+                "contra":"Contiene lutecio y presenta radiactividad intrínseca; costo del material."
+            },
+            "LYSO": {
+                "nombre":"Oxiortosilicato de lutecio-itrio dopado con cerio", "formula":"(Lu,Y)₂SiO₅:Ce",
+                "dens":"≈7.1–7.2", "zeff":"≈60–65", "luz":"≈30 000–32 000", "decay":"≈40–41 ns",
+                "rob":"No higroscópico; robusto",
+                "epoca":"Muy utilizado en PET/CT y TOF contemporáneo",
+                "pro":"Buen equilibrio entre densidad, luz y rapidez; excelente para temporización.",
+                "contra":"Costo y radiactividad intrínseca asociada al lutecio."
+            },
+            "LaBr₃:Ce": {
+                "nombre":"Bromuro de lantano dopado con cerio", "formula":"LaBr₃:Ce",
+                "dens":"≈5.3", "zeff":"≈47", "luz":"≈60 000", "decay":"≈15–25 ns",
+                "rob":"Higroscópico; necesita encapsulado",
+                "epoca":"Investigación y desarrollos de temporización",
+                "pro":"Muy alta producción de luz, rápido y excelente resolución energética.",
+                "contra":"Menor poder de frenado que LSO/LYSO y es higroscópico."
+            },
+            "GAGG:Ce": {
+                "nombre":"Granate de gadolinio-aluminio-galio dopado con cerio", "formula":"Gd₃(Al,Ga)₅O₁₂:Ce",
+                "dens":"≈6.5–6.6", "zeff":"≈48–53", "luz":"≈46 000–58 000", "decay":"≈50–200 ns*",
+                "rob":"No higroscópico; buena robustez",
+                "epoca":"Material emergente / investigación PET",
+                "pro":"Alta producción de luz, buena densidad y posibilidad de fabricación en cerámicas.",
+                "contra":"La temporización depende mucho de composición/dopaje; no domina el PET clínico actual."
+            }
+        }
+
+        sel = st.selectbox("Elegí un cristal para explorarlo", list(cristales.keys()), index=4)
+        d = cristales[sel]
+
+        st.markdown(
+            f"""
+            <div style="background:#0e1720;border:1px solid #35576f;border-radius:18px;padding:18px">
+              <div style="font-size:27px;font-weight:700;color:#ffd166">{sel} · {d["formula"]}</div>
+              <div style="font-size:17px;color:#c9d6df;margin-top:4px">{d["nombre"]}</div>
+              <div style="font-size:15px;color:#8bd3ff;margin-top:7px">{d["epoca"]}</div>
+            </div>
+            """, unsafe_allow_html=True
+        )
+
+        c1,c2,c3,c4 = st.columns(4)
+        c1.metric("Densidad", f'{d["dens"]} g/cm³')
+        c2.metric("Z efectivo", d["zeff"])
+        c3.metric("Luz", f'{d["luz"]} fot/MeV')
+        c4.metric("Decaimiento", d["decay"])
+
+        cp,cc = st.columns(2)
+        cp.success("**Ventaja principal**\n\n" + d["pro"])
+        cc.warning("**Limitación principal**\n\n" + d["contra"])
+        st.info("**Robustez / manejo del material:** " + d["rob"])
+
+        st.markdown("#### 📊 Comparación rápida de cristales PET")
+        st.markdown("""
+| Cristal | Fórmula | Densidad (g/cm³) | Luz aprox. (fot/MeV) | Decaimiento | Robustez / higroscopicidad | Lectura didáctica |
+|---|---|---:|---:|---:|---|---|
+| **NaI(Tl)** | NaI:Tl | 3.67 | 38 000 | 230 ns | Higroscópico | Mucha luz, pero bajo poder de frenado para 511 keV |
+| **BGO** | Bi₄Ge₃O₁₂ | 7.13 | 9 000 | 300 ns | No higroscópico | Muy denso, pero lento y con poca luz |
+| **GSO:Ce** | Gd₂SiO₅:Ce | ~6.7 | 13 000 | 50–65 ns | No higroscópico | Más rápido que BGO |
+| **LSO:Ce** | Lu₂SiO₅:Ce | ~7.4 | 26–31 000 | ~40 ns | No higroscópico | Denso + rápido; muy apto para TOF |
+| **LYSO:Ce** | (Lu,Y)₂SiO₅:Ce | ~7.1 | 30–32 000 | ~40 ns | No higroscópico | Gran equilibrio; muy usado actualmente |
+| **LaBr₃:Ce** | LaBr₃:Ce | ~5.3 | ~60 000 | 15–25 ns | Higroscópico | Muy rápido y luminoso, menor stopping power |
+| **GAGG:Ce** | Gd₃(Al,Ga)₅O₁₂:Ce | ~6.6 | 46–58 000 | variable | No higroscópico | Material emergente con alta luz |
+        """)
+
+        st.caption(
+            "Los valores son representativos y pueden variar con composición, dopaje, fabricante y método de medición. "
+            "La constante de decaimiento NO es el tiempo muerto: un cristal rápido favorece la temporización y altas tasas, "
+            "pero el tiempo muerto es una propiedad del sistema detector/electrónica completo."
+        )
+
+        st.markdown("#### 🔗 Del cristal a la coincidencia")
+        st.markdown("### `511 keV → CRISTAL → LUZ → PMT / SiPM → ELECTRÓNICA → COINCIDENCIA → LOR`")
+        st.caption("En PET moderno, los SiPM permiten módulos compactos y una temporización adecuada para sistemas TOF.")
 
     with p4:
-        st.subheader("⏱️ Tiempo muerto: cuando los eventos llegan demasiado rápido")
-        tasa=st.slider("Tasa conceptual de eventos",10,100,35,5,key="deadtime_rate")
-        capacidad=65
-        registrados=min(tasa,capacidad); perdidos=max(0,tasa-capacidad)
-        c1,c2,c3=st.columns(3)
-        c1.metric("Eventos que llegan",tasa); c2.metric("Procesados",registrados); c3.metric("No procesados",perdidos)
-        barras=""
-        for k in range(20):
-            nivel=(k+1)*5
-            fill="#7ef29a" if nivel<=registrados else ("#ff4d6d" if nivel<=tasa else "#263947")
-            barras+=f'<rect x="{65+k*35}" y="135" width="24" height="90" rx="5" fill="{fill}"/>'
-        html_dt=f"""<div style="background:#0e1720;border-radius:18px"><svg viewBox="0 0 800 300" width="100%" height="300">
-        <text x="400" y="35" fill="white" text-anchor="middle" font-size="23">Electrónica procesando eventos</text>{barras}
-        <text x="400" y="265" fill="#8bd3ff" text-anchor="middle" font-size="16">Verde = procesado · Rojo = evento no procesado</text>
-        </svg></div>"""
-        components.html(html_dt,height=325)
-        if perdidos==0:
-            st.success("En este modelo la electrónica alcanza a procesar los eventos que llegan.")
+        st.subheader("⏱️ Tiempo muerto: ¿por qué se pierden eventos?")
+        st.write(
+            "Después de registrar un evento, el detector y la electrónica necesitan un intervalo muy breve para procesarlo. "
+            "Durante ese intervalo el sistema puede no estar disponible para registrar otro evento. A eso llamamos **tiempo muerto**."
+        )
+
+        st.markdown("### 1️⃣ Miralo evento por evento")
+        separacion = st.slider(
+            "Separación conceptual entre dos eventos",
+            1, 10, 7, 1,
+            help="No son unidades reales: sirve para comparar la separación entre eventos con el tiempo de procesamiento."
+        )
+        tau_demo = 5
+        segundo_registrado = separacion >= tau_demo
+
+        x1 = 180
+        x2 = 180 + separacion*55
+        color2 = "#7ef29a" if segundo_registrado else "#ff4d6d"
+        texto2 = "REGISTRADO" if segundo_registrado else "PERDIDO"
+
+        html_dt=f"""
+        <div style="background:#0e1720;border:1px solid #29465d;border-radius:18px;padding:12px">
+        <svg viewBox="0 0 900 300" width="100%" height="300">
+          <text x="450" y="32" fill="white" text-anchor="middle" font-size="22">Línea temporal del detector</text>
+          <line x1="90" y1="155" x2="830" y2="155" stroke="#6f8798" stroke-width="4"/>
+
+          <circle cx="{x1}" cy="155" r="15" fill="#7ef29a"/>
+          <text x="{x1}" y="125" fill="#7ef29a" text-anchor="middle" font-size="15">Evento 1</text>
+
+          <rect x="{x1+15}" y="137" width="{tau_demo*55}" height="36" rx="8" fill="#ffd166" opacity=".30"/>
+          <text x="{x1+15+(tau_demo*55)/2}" y="205" fill="#ffd166" text-anchor="middle" font-size="14">
+            sistema ocupado · tiempo muerto
+          </text>
+
+          <circle cx="{x2}" cy="155" r="15" fill="{color2}"/>
+          <text x="{x2}" y="125" fill="{color2}" text-anchor="middle" font-size="15">Evento 2</text>
+          <text x="{x2}" y="245" fill="{color2}" text-anchor="middle" font-size="18" font-weight="bold">{texto2}</text>
+        </svg></div>
+        """
+        components.html(html_dt,height=330)
+
+        if segundo_registrado:
+            st.success("El segundo evento llega después de que terminó el intervalo de procesamiento → puede registrarse.")
         else:
-            st.warning("Al aumentar la tasa, algunos eventos llegan mientras el sistema sigue ocupado: aparecen pérdidas por tiempo muerto.")
-        st.caption("Modelo cualitativo del concepto de tiempo muerto; no utiliza parámetros de un equipo PET real.")
+            st.warning("El segundo evento llega mientras el sistema todavía está ocupado → en este modelo se pierde.")
+
+        st.markdown("### 2️⃣ Ahora aumentá la tasa de eventos")
+        tasa = st.slider("Tasa conceptual de eventos que llegan", 10, 100, 35, 5, key="deadtime_rate_v2")
+        capacidad = 65
+        registrados = min(tasa, capacidad)
+        perdidos = max(0, tasa-capacidad)
+
+        c1,c2,c3 = st.columns(3)
+        c1.metric("Llegan", tasa)
+        c2.metric("Se registran", registrados)
+        c3.metric("Se pierden", perdidos)
+
+        st.progress(registrados/100)
+        if perdidos == 0:
+            st.info("A esta tasa conceptual, los eventos están suficientemente separados para que el sistema los procese.")
+        else:
+            st.error(
+                f"Al aumentar la tasa, los eventos llegan cada vez más juntos. "
+                f"En este ejemplo conceptual {perdidos} eventos quedan sin registrar porque el sistema no alcanza a recuperarse."
+            )
+
+        st.markdown(
+            "**Idea clave:** `más tasa de eventos → menor separación temporal → más probabilidad de que un evento llegue durante el tiempo muerto → pérdidas de cuentas`"
+        )
+        st.caption(
+            "Es una representación cualitativa. El tiempo muerto real depende del conjunto cristal + fotodetector + electrónica + procesamiento; "
+            "no se está simulando un modelo clínico paralyzable/no-paralyzable ni valores de un equipo real."
+        )
 
     with p5:
         st.subheader("🧠 De muchas coincidencias a la imagen PET")
