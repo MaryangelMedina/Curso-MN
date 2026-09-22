@@ -93,40 +93,171 @@ with lab_spect:
         st.info(explicaciones[etapa])
 
     with s2:
-        st.subheader("🔬 Colimadores: cambiá la geometría")
-        tipo = st.selectbox("Tipo de colimador", ["Agujeros paralelos","Convergente","Divergente","Pinhole"])
+        st.subheader("🔬 Colimadores: cambiá la geometría y observá la imagen resultante")
+        st.caption("El objeto es asimétrico a propósito para que se vea claramente si la imagen se conserva, se magnifica, se reduce o se invierte.")
+
+        tipo = st.selectbox(
+            "Tipo de colimador",
+            ["Agujeros paralelos","Convergente","Divergente","Pinhole"]
+        )
         distancia = st.slider("Distancia relativa objeto-colimador", 1, 10, 4)
 
         descripcion = {
-            "Agujeros paralelos":"Mantiene aproximadamente el tamaño de la imagen. La resolución se degrada al aumentar la distancia.",
-            "Convergente":"Produce magnificación geométrica.",
-            "Divergente":"Produce reducción y permite representar un campo mayor.",
-            "Pinhole":"Produce magnificación e inversión; resulta útil para objetos pequeños."
+            "Agujeros paralelos":"Mantiene aproximadamente el tamaño del objeto. Al aumentar la distancia, la imagen se representa con menor nitidez.",
+            "Convergente":"Produce una imagen magnificada.",
+            "Divergente":"Produce una imagen reducida y permite abarcar un campo de visión mayor.",
+            "Pinhole":"Produce magnificación e inversión de la imagen."
         }[tipo]
         st.info(descripcion)
 
+        # Tamaño visual de la imagen según la geometría seleccionada.
+        # Es una representación conceptual, no una simulación cuantitativa.
         if tipo == "Agujeros paralelos":
-            rayos = ''.join(f'<line x1="190" y1="{120+k*55}" x2="590" y2="{120+k*55}"/>' for k in range(3))
+            escala = 1.0
+            invertir = False
+            etiqueta_imagen = "Tamaño aproximadamente conservado"
+            rayos = (
+                '<line x1="190" y1="125" x2="575" y2="125"/>'
+                '<line x1="190" y1="180" x2="575" y2="180"/>'
+                '<line x1="190" y1="235" x2="575" y2="235"/>'
+            )
+            colimador_svg = """
+                <rect x="565" y="72" width="48" height="216" rx="4" fill="#737d86"/>
+                <g stroke="#17212a" stroke-width="5">
+                    <line x1="577" y1="82" x2="577" y2="278"/>
+                    <line x1="589" y1="82" x2="589" y2="278"/>
+                    <line x1="601" y1="82" x2="601" y2="278"/>
+                </g>
+            """
         elif tipo == "Convergente":
-            rayos = '<line x1="190" y1="135" x2="590" y2="100"/><line x1="190" y1="180" x2="590" y2="180"/><line x1="190" y1="225" x2="590" y2="260"/>'
+            escala = 1.45
+            invertir = False
+            etiqueta_imagen = "Imagen magnificada"
+            rayos = (
+                '<line x1="190" y1="135" x2="575" y2="95"/>'
+                '<line x1="190" y1="180" x2="575" y2="180"/>'
+                '<line x1="190" y1="225" x2="575" y2="265"/>'
+            )
+            colimador_svg = """
+                <polygon points="560,70 615,95 615,265 560,290" fill="#737d86"/>
+                <g stroke="#17212a" stroke-width="4">
+                    <line x1="570" y1="88" x2="606" y2="108"/>
+                    <line x1="570" y1="132" x2="606" y2="142"/>
+                    <line x1="570" y1="180" x2="606" y2="180"/>
+                    <line x1="570" y1="228" x2="606" y2="218"/>
+                    <line x1="570" y1="272" x2="606" y2="252"/>
+                </g>
+            """
         elif tipo == "Divergente":
-            rayos = '<line x1="190" y1="100" x2="590" y2="135"/><line x1="190" y1="180" x2="590" y2="180"/><line x1="190" y1="260" x2="590" y2="225"/>'
+            escala = 0.68
+            invertir = False
+            etiqueta_imagen = "Imagen reducida"
+            rayos = (
+                '<line x1="190" y1="100" x2="575" y2="135"/>'
+                '<line x1="190" y1="180" x2="575" y2="180"/>'
+                '<line x1="190" y1="260" x2="575" y2="225"/>'
+            )
+            colimador_svg = """
+                <polygon points="560,95 615,70 615,290 560,265" fill="#737d86"/>
+                <g stroke="#17212a" stroke-width="4">
+                    <line x1="570" y1="108" x2="606" y2="88"/>
+                    <line x1="570" y1="142" x2="606" y2="132"/>
+                    <line x1="570" y1="180" x2="606" y2="180"/>
+                    <line x1="570" y1="218" x2="606" y2="228"/>
+                    <line x1="570" y1="252" x2="606" y2="272"/>
+                </g>
+            """
         else:
-            rayos = '<line x1="190" y1="125" x2="450" y2="180"/><line x1="190" y1="235" x2="450" y2="180"/><line x1="450" y1="180" x2="650" y2="120"/><line x1="450" y1="180" x2="650" y2="240"/>'
+            escala = 1.35
+            invertir = True
+            etiqueta_imagen = "Imagen invertida y magnificada"
+            rayos = (
+                '<line x1="190" y1="125" x2="520" y2="180"/>'
+                '<line x1="190" y1="235" x2="520" y2="180"/>'
+                '<line x1="520" y1="180" x2="630" y2="115"/>'
+                '<line x1="520" y1="180" x2="630" y2="245"/>'
+            )
+            colimador_svg = """
+                <polygon points="545,72 545,160 520,180 545,200 545,288 610,265 610,95"
+                         fill="#737d86"/>
+                <circle cx="520" cy="180" r="6" fill="#111820" stroke="#d7e1e8" stroke-width="2"/>
+            """
+
+        # La distancia modifica visualmente la nitidez del paralelo.
+        desenfoque = min(5.0, 0.45 * distancia) if tipo == "Agujeros paralelos" else 0.7
+        rx_img = 42 * escala
+        ry_img = 58 * escala
+
+        # Marcador asimétrico: en pinhole cambia de arriba a abajo para mostrar la inversión.
+        punto_y_obj = 152
+        punto_y_img = 180 + (180 - punto_y_obj) * escala if invertir else 180 + (punto_y_obj - 180) * escala
 
         html = f"""
-        <div style="background:#0e1720;border-radius:20px">
-        <svg viewBox="0 0 800 350" width="100%" height="350">
-          <text x="400" y="30" fill="white" text-anchor="middle" font-size="25">{tipo}</text>
-          <ellipse cx="130" cy="180" rx="{35+distancia*2}" ry="55" fill="#ff9f68"/>
+        <div style="background:#0e1720;border:1px solid #29465d;border-radius:22px;padding:16px;color:white;font-family:Arial">
+        <svg viewBox="0 0 1180 410" width="100%" height="410">
+          <defs>
+            <filter id="blurImagen">
+              <feGaussianBlur stdDeviation="{desenfoque}"/>
+            </filter>
+          </defs>
+
+          <text x="590" y="32" fill="white" text-anchor="middle" font-size="25" font-weight="bold">{tipo}</text>
+
+          <!-- Objeto/fuente -->
+          <ellipse cx="145" cy="180" rx="48" ry="66" fill="#ff9f68" stroke="#ffc89f" stroke-width="2"/>
+          <circle cx="145" cy="{punto_y_obj}" r="12" fill="#ffcf33"/>
+          <text x="145" y="285" fill="white" text-anchor="middle" font-size="18">Objeto / fuente</text>
+
+          <!-- Rayos y colimador -->
           <g stroke="#ffd166" stroke-width="3">{rayos}</g>
-          <rect x="590" y="70" width="45" height="220" fill="#6c757d"/>
-          <rect x="650" y="70" width="70" height="220" fill="#8fd3a8"/>
-          <text x="130" y="275" fill="white" text-anchor="middle">Objeto / fuente</text>
-          <text x="685" y="320" fill="white" text-anchor="middle">Cristal</text>
-        </svg></div>
+          {colimador_svg}
+          <text x="575" y="320" fill="white" text-anchor="middle" font-size="18">Colimador</text>
+
+          <!-- Cristal -->
+          <rect x="630" y="68" width="64" height="224" rx="5" fill="#8fd3a8" stroke="#c9f2d7" stroke-width="2"/>
+          <text x="662" y="320" fill="white" text-anchor="middle" font-size="18">Cristal</text>
+
+          <!-- Flecha hacia la imagen -->
+          <line x1="715" y1="180" x2="790" y2="180" stroke="#6fbdf2" stroke-width="4"/>
+          <polygon points="790,180 775,170 775,190" fill="#6fbdf2"/>
+
+          <!-- Pantalla de imagen -->
+          <rect x="805" y="62" width="315" height="245" rx="18" fill="#071019" stroke="#3a5c74" stroke-width="2"/>
+          <text x="962" y="92" fill="#8bd3ff" text-anchor="middle" font-size="20" font-weight="bold">Imagen resultante</text>
+
+          <g filter="url(#blurImagen)">
+            <ellipse cx="962" cy="185" rx="{rx_img}" ry="{ry_img}" fill="#5f3f91" opacity="0.90"/>
+            <ellipse cx="962" cy="185" rx="{rx_img*0.62}" ry="{ry_img*0.62}" fill="#a44eb8" opacity="0.90"/>
+            <ellipse cx="962" cy="185" rx="{rx_img*0.34}" ry="{ry_img*0.34}" fill="#f07a2f" opacity="0.95"/>
+            <circle cx="962" cy="{punto_y_img}" r="{max(7, 11*escala)}" fill="#ffd42a"/>
+          </g>
+
+          <text x="962" y="338" fill="#ffd166" text-anchor="middle" font-size="18">{etiqueta_imagen}</text>
+          <text x="962" y="365" fill="#c9d6df" text-anchor="middle" font-size="15">Representación conceptual de la proyección</text>
+        </svg>
+        </div>
         """
-        components.html(html, height=380)
+        components.html(html, height=450)
+
+        c1, c2, c3 = st.columns(3)
+        if tipo == "Agujeros paralelos":
+            c1.metric("Tamaño de imagen", "≈ conservado")
+            c2.metric("Orientación", "Conservada")
+            c3.metric("Distancia", f"{distancia} / 10")
+        elif tipo == "Convergente":
+            c1.metric("Tamaño de imagen", "Magnificado")
+            c2.metric("Orientación", "Conservada")
+            c3.metric("Campo de visión", "Menor")
+        elif tipo == "Divergente":
+            c1.metric("Tamaño de imagen", "Reducido")
+            c2.metric("Orientación", "Conservada")
+            c3.metric("Campo de visión", "Mayor")
+        else:
+            c1.metric("Tamaño de imagen", "Magnificado")
+            c2.metric("Orientación", "Invertida")
+            c3.metric("Geometría", "Pinhole")
+
+        st.caption("La figura muestra cualitativamente el efecto geométrico de cada colimador; no representa una adquisición clínica cuantitativa.")
 
     with s3:
         st.subheader("🔄 Adquisición SPECT alrededor del paciente")
