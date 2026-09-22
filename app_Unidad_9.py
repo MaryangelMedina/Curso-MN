@@ -44,7 +44,7 @@ with lab_spect:
             ("NaI(Tl)", 410, "#8fd3a8"),
             ("Luz", 535, "#ffe082"),
             ("PMT", 650, "#5aa9e6"),
-            ("X - Y - Z", 790, "#9b7ede"),
+            ("Imagen", 790, "#9b7ede"),
         ]
         partes = [
             '<svg viewBox="0 0 1000 390" width="100%" height="390">',
@@ -55,14 +55,28 @@ with lab_spect:
         ]
         for j,(nombre,x,color) in enumerate(elementos):
             activo = (i == j+1) or (i >= 5 and j == 4)
-            ancho = 150 if j == 4 else 100
-            partes.append(
-                f'<rect x="{x}" y="105" width="{ancho}" height="180" rx="10" fill="{color}" '
-                f'stroke="{"#ffd166" if activo else "#c9d6df"}" stroke-width="{6 if activo else 2}"/>'
-            )
-            partes.append(
-                f'<text x="{x+ancho/2}" y="315" fill="white" font-size="17" text-anchor="middle">{nombre}</text>'
-            )
+            if j == 4:
+                # La salida final se representa como una imagen circular,
+                # visualmente similar a la fuente del paciente.
+                partes.append(
+                    f'<circle cx="{x+70}" cy="195" r="72" fill="{color}" '
+                    f'stroke="{"#ffd166" if activo else "#c9d6df"}" stroke-width="{6 if activo else 2}"/>'
+                )
+                partes.append(
+                    f'<circle cx="{x+70}" cy="195" r="28" fill="#ffb703" opacity="0.95"/>'
+                )
+                partes.append(
+                    f'<text x="{x+70}" y="315" fill="white" font-size="17" text-anchor="middle">Imagen</text>'
+                )
+            else:
+                ancho = 100
+                partes.append(
+                    f'<rect x="{x}" y="105" width="{ancho}" height="180" rx="10" fill="{color}" '
+                    f'stroke="{"#ffd166" if activo else "#c9d6df"}" stroke-width="{6 if activo else 2}"/>'
+                )
+                partes.append(
+                    f'<text x="{x+ancho/2}" y="315" fill="white" font-size="17" text-anchor="middle">{nombre}</text>'
+                )
         partes.append(f'<text x="500" y="365" fill="#ffd166" font-size="22" text-anchor="middle">Etapa actual: {etapa}</text>')
         partes.append('</svg>')
         components.html('<div style="background:#0e1720;border-radius:20px;padding:12px">' + "".join(partes) + '</div>', height=430)
